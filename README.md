@@ -44,7 +44,8 @@ The project will use several functional programming concepts:
 ```bash
 cd AssetFlowApp
 dotnet build
-dotnet run```
+dotnet run
+```
 
 ## Then open:
 http://localhost:5000
