@@ -5,7 +5,16 @@ function isIDisposable(x){
   return"Dispose"in x;
 }
 function Main(){
+  const nameVar=_c.Create_1("");
+  const ownerVar=_c.Create_1("");
+  const purchaseYearVar=_c.Create_1("");
+  const selectedTypeVar=_c.Create_1(Laptop);
+  const selectedStatusVar=_c.Create_1(Active);
+  const validationMessageVar=_c.Create_1("");
+  const nextIdVar=_c.Create_1(5);
   const assetsVar=_c.Create_1(ofArray([New(1, "DELL Latitude 5420", "Adam Szluka", Laptop, Active, 2021), New(2, "VM-WEB-01", "Infrastructure Team", VirtualMachine, Active, 2023), New(3, "Juniper EX2300", "Network Team", NetworkDevice, InRepair, 2019), New(4, "HP ProDesk 600", "Finance Department", Desktop, Retired, 2018)]));
+  const typeButton=(label, value) => Doc.BindView((selectedType) => Doc.Element("button", [Attr.HandlerImpl("click", () =>() => selectedTypeVar.Set(value)), Attr.Create("style", Equals(selectedType, value)?"margin-right: 8px; margin-bottom: 8px; padding: 8px 12px; border-radius: 8px; border: none; background: "+assetTypeColor(value)+"; color: white; font-weight: bold; cursor: pointer;":"margin-right: 8px; margin-bottom: 8px; padding: 8px 12px; border-radius: 8px; border: 1px solid #cccccc; background: white; cursor: pointer;")], [Doc.TextNode(label)]), selectedTypeVar.View);
+  const statusButton=(label, value) => Doc.BindView((selectedStatus) => Doc.Element("button", [Attr.HandlerImpl("click", () =>() => selectedStatusVar.Set(value)), Attr.Create("style", Equals(selectedStatus, value)?"margin-right: 8px; margin-bottom: 8px; padding: 8px 12px; border-radius: 8px; border: none; background: "+assetStatusColor(value)+"; color: white; font-weight: bold; cursor: pointer;":"margin-right: 8px; margin-bottom: 8px; padding: 8px 12px; border-radius: 8px; border: 1px solid #cccccc; background: white; cursor: pointer;")], [Doc.TextNode(label)]), selectedStatusVar.View);
   const statsPanel=Doc.EmbedView(Map((assets) => {
     const total=length(assets);
     const active=length(filter((a) => a.Status.$===0, assets));
@@ -13,23 +22,52 @@ function Main(){
     const replacementDue=length(filter(isReplacementDue, assets));
     return Doc.Element("div", [Attr.Create("style", "display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px;")], [Doc.Element("div", [Attr.Create("style", "padding: 16px; background: #f5f5f5; border-radius: 12px;")], [Doc.Element("div", [Attr.Create("style", "font-size: 13px; color: #666;")], [Doc.TextNode("Total assets")]), Doc.Element("div", [Attr.Create("style", "font-size: 26px; font-weight: bold;")], [Doc.TextNode(String(total))])]), Doc.Element("div", [Attr.Create("style", "padding: 16px; background: #e8f5e9; border-radius: 12px;")], [Doc.Element("div", [Attr.Create("style", "font-size: 13px; color: #666;")], [Doc.TextNode("Active")]), Doc.Element("div", [Attr.Create("style", "font-size: 26px; font-weight: bold;")], [Doc.TextNode(String(active))])]), Doc.Element("div", [Attr.Create("style", "padding: 16px; background: #fff8e1; border-radius: 12px;")], [Doc.Element("div", [Attr.Create("style", "font-size: 13px; color: #666;")], [Doc.TextNode("In repair")]), Doc.Element("div", [Attr.Create("style", "font-size: 26px; font-weight: bold;")], [Doc.TextNode(String(inRepair))])]), Doc.Element("div", [Attr.Create("style", "padding: 16px; background: #ffebee; border-radius: 12px;")], [Doc.Element("div", [Attr.Create("style", "font-size: 13px; color: #666;")], [Doc.TextNode("Replacement due")]), Doc.Element("div", [Attr.Create("style", "font-size: 26px; font-weight: bold;")], [Doc.TextNode(String(replacementDue))])])]);
   }, assetsVar.View));
+  const validationMessage=Doc.BindView((message) => message==""?Doc.Empty:Doc.Element("div", [Attr.Create("style", "margin-top: 10px; padding: 10px; border-radius: 8px; background: #ffebee; color: #c62828; font-weight: bold;")], [Doc.TextNode(message)]), validationMessageVar.View);
   const assetCard=(asset) => Doc.Element("div", [Attr.Create("style", "padding: 18px; border: 1px solid #e0e0e0; border-radius: 14px; background: white; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 14px;")], [Doc.Element("div", [Attr.Create("style", "display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;")], [Doc.Element("div", [], [Doc.Element("h3", [Attr.Create("style", "margin: 0 0 8px 0;")], [Doc.TextNode(asset.Name)]), Doc.Element("div", [Attr.Create("style", "color: #555; margin-bottom: 8px;")], [Doc.TextNode("Owner: "+asset.Owner)]), Doc.Element("div", [Attr.Create("style", "color: #555; margin-bottom: 8px;")], [Doc.TextNode("Purchase year: "+String(asset.PurchaseYear)+" | Age: "+String(assetAge(asset))+" years")]), Doc.Element("span", [Attr.Create("style", "display: inline-block; margin-right: 8px; padding: 5px 10px; border-radius: 999px; color: white; font-size: 12px; font-weight: bold; background: "+assetTypeColor(asset.AssetType)+";")], [Doc.TextNode(assetTypeToString(asset.AssetType))]), Doc.Element("span", [Attr.Create("style", "display: inline-block; margin-right: 8px; padding: 5px 10px; border-radius: 999px; color: white; font-size: 12px; font-weight: bold; background: "+assetStatusColor(asset.Status)+";")], [Doc.TextNode(assetStatusToString(asset.Status))]), Doc.Element("span", [Attr.Create("style", "display: inline-block; padding: 5px 10px; border-radius: 999px; color: white; font-size: 12px; font-weight: bold; background: "+replacementColor(asset)+";")], [Doc.TextNode(replacementText(asset))])])])]);
   const assetList=Doc.BindView((assets) => Doc.Concat(map(assetCard, assets)), assetsVar.View);
-  const _1=Doc.Element("div", [Attr.Create("style", "max-width: 1000px; margin: 40px auto; padding: 24px; font-family: Arial, sans-serif; background: #fcfcfc;")], [Doc.Element("div", [Attr.Create("style", "background: linear-gradient(135deg, #37474f, #78909c); color: white; padding: 28px; border-radius: 16px; margin-bottom: 24px;")], [Doc.Element("h1", [Attr.Create("style", "margin: 0 0 8px 0; font-size: 34px;")], [Doc.TextNode("AssetFlow")]), Doc.Element("p", [Attr.Create("style", "margin: 0; font-size: 16px;")], [Doc.TextNode("IT asset management web application built with F# and WebSharper.")])]), statsPanel, Doc.Element("div", [Attr.Create("style", "background: white; padding: 22px; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 24px;")], [Doc.Element("h2", [Attr.Create("style", "margin-top: 0;")], [Doc.TextNode("IT Asset Inventory")]), Doc.Element("p", [Attr.Create("style", "color: #555;")], [Doc.TextNode("This dashboard shows IT assets, owners, statuses, purchase years, asset age, and replacement status.")])]), Doc.Element("h2", [], [Doc.TextNode("Assets")]), Doc.Element("div", [], [assetList])]);
+  const _1=Doc.Element("div", [Attr.Create("style", "max-width: 1000px; margin: 40px auto; padding: 24px; font-family: Arial, sans-serif; background: #fcfcfc;")], [Doc.Element("div", [Attr.Create("style", "background: linear-gradient(135deg, #37474f, #78909c); color: white; padding: 28px; border-radius: 16px; margin-bottom: 24px;")], [Doc.Element("h1", [Attr.Create("style", "margin: 0 0 8px 0; font-size: 34px;")], [Doc.TextNode("AssetFlow")]), Doc.Element("p", [Attr.Create("style", "margin: 0; font-size: 16px;")], [Doc.TextNode("IT asset management web application built with F# and WebSharper.")])]), statsPanel, Doc.Element("div", [Attr.Create("style", "background: white; padding: 22px; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 24px;")], [Doc.Element("h2", [Attr.Create("style", "margin-top: 0;")], [Doc.TextNode("Add new asset")]), Doc.Element("div", [Attr.Create("style", "margin-bottom: 10px;")], [Doc.Input([Attr.Create("placeholder", "Asset name"), Attr.Create("style", "width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cccccc; box-sizing: border-box;")], nameVar)]), Doc.Element("div", [Attr.Create("style", "margin-bottom: 10px;")], [Doc.Input([Attr.Create("placeholder", "Owner"), Attr.Create("style", "width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cccccc; box-sizing: border-box;")], ownerVar)]), Doc.Element("div", [Attr.Create("style", "margin-bottom: 14px;")], [Doc.Input([Attr.Create("placeholder", "Purchase year"), Attr.Create("style", "width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cccccc; box-sizing: border-box;")], purchaseYearVar)]), Doc.Element("div", [Attr.Create("style", "margin-bottom: 12px;")], [Doc.Element("div", [Attr.Create("style", "font-weight: bold; margin-bottom: 6px;")], [Doc.TextNode("Asset type")]), typeButton("Laptop", Laptop), typeButton("Desktop", Desktop), typeButton("Server", Server), typeButton("VM", VirtualMachine), typeButton("Network", NetworkDevice), typeButton("Other", Other)]), Doc.Element("div", [Attr.Create("style", "margin-bottom: 14px;")], [Doc.Element("div", [Attr.Create("style", "font-weight: bold; margin-bottom: 6px;")], [Doc.TextNode("Asset status")]), statusButton("Active", Active), statusButton("In Repair", InRepair), statusButton("Retired", Retired), statusButton("Missing", Missing)]), Doc.Element("button", [Attr.HandlerImpl("click", () =>() => {
+    const name=Trim(nameVar.Get());
+    const owner=Trim(ownerVar.Get());
+    const yearText=Trim(purchaseYearVar.Get());
+    if(name=="")return validationMessageVar.Set("Asset name is required.");
+    else if(owner=="")return validationMessageVar.Set("Owner is required.");
+    else {
+      const m=parseYear(yearText);
+      if(m!=null&&m.$==1){
+        if(!isValidYear(m.$0)){
+          m.$0;
+          return validationMessageVar.Set("Purchase year must be between 2000 and 2026.");
+        }
+        else {
+          const year=m.$0;
+          const newAsset=New(nextIdVar.Get(), name, owner, selectedTypeVar.Get(), selectedStatusVar.Get(), year);
+          assetsVar.Set(append(assetsVar.Get(), ofArray([newAsset])));
+          nextIdVar.Set(nextIdVar.Get()+1);
+          nameVar.Set("");
+          ownerVar.Set("");
+          purchaseYearVar.Set("");
+          selectedTypeVar.Set(Laptop);
+          selectedStatusVar.Set(Active);
+          return validationMessageVar.Set("");
+        }
+      }
+      else return validationMessageVar.Set("Purchase year must be a valid number.");
+    }
+  }), Attr.Create("style", "padding: 10px 16px; border-radius: 8px; border: none; background: #37474f; color: white; font-weight: bold; cursor: pointer;")], [Doc.TextNode("Add asset")]), validationMessage]), Doc.Element("div", [Attr.Create("style", "background: white; padding: 22px; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 24px;")], [Doc.Element("h2", [Attr.Create("style", "margin-top: 0;")], [Doc.TextNode("IT Asset Inventory")]), Doc.Element("p", [Attr.Create("style", "color: #555;")], [Doc.TextNode("This dashboard shows IT assets, owners, statuses, purchase years, asset age, and replacement status.")])]), Doc.Element("h2", [], [Doc.TextNode("Assets")]), Doc.Element("div", [], [assetList])]);
   LoadLocalTemplates("");
   Doc.RunById("main", _1);
-}
-function assetAge(asset){
-  return currentYear()-asset.PurchaseYear;
 }
 function assetTypeColor(assetType){
   return assetType.$==1?"#7b1fa2":assetType.$==2?"#455a64":assetType.$==3?"#00838f":assetType.$==4?"#ef6c00":assetType.$==5?"#5d4037":"#1976d2";
 }
-function assetTypeToString(assetType){
-  return assetType.$==1?"Desktop":assetType.$==2?"Server":assetType.$==3?"Virtual Machine":assetType.$==4?"Network Device":assetType.$==5?"Other":"Laptop";
-}
 function assetStatusColor(status){
   return status.$==1?"#f9a825":status.$==2?"#616161":status.$==3?"#c62828":"#2e7d32";
+}
+function assetAge(asset){
+  return currentYear()-asset.PurchaseYear;
+}
+function assetTypeToString(assetType){
+  return assetType.$==1?"Desktop":assetType.$==2?"Server":assetType.$==3?"Virtual Machine":assetType.$==4?"Network Device":assetType.$==5?"Other":"Laptop";
 }
 function assetStatusToString(status){
   return status.$==1?"In Repair":status.$==2?"Retired":status.$==3?"Missing":"Active";
@@ -42,6 +80,16 @@ function replacementText(asset){
 }
 function isReplacementDue(asset){
   return assetAge(asset)>=5;
+}
+function parseYear(value){
+  let o;
+  const m=(o=0,[TryParse(value, {get:() => o, set:(v) => {
+    o=v;
+  }}), o]);
+  return m[0]?Some(m[1]):null;
+}
+function isValidYear(year){
+  return year>=2000&&year<=currentYear();
 }
 function currentYear(){
   return _c_1.currentYear;
@@ -63,6 +111,16 @@ let _c=Lazy((_i) => class Var_1 extends Object_1 {
   }
   static { }
 });
+let Laptop={$:0};
+let VirtualMachine={$:3};
+let NetworkDevice={$:4};
+let Desktop={$:1};
+let Server={$:2};
+let Other={$:5};
+let Active={$:0};
+let InRepair={$:1};
+let Retired={$:2};
+let Missing={$:3};
 function ofArray(arr){
   let r=FSharpList.Empty;
   for(let i=length_1(arr)-1, _1=0;i>=_1;i--)r=FSharpList.Cons(get(arr, i), r);
@@ -135,6 +193,31 @@ function length(l){
     }
   return i;
 }
+function append(x, y){
+  let r;
+  let l;
+  let go;
+  if(x.$==0)return y;
+  else if(y.$==0)return x;
+  else {
+    const res=Create_1(FSharpList, {$:1});
+    r=res;
+    l=x;
+    go=true;
+    while(go)
+      {
+        r.$0=l.$0;
+        l=l.$1;
+        if(l.$==0)go=false;
+        else {
+          const t=Create_1(FSharpList, {$:1});
+          r=(r.$1=t,t);
+        }
+      }
+    r.$1=y;
+    return res;
+  }
+}
 function tail(l){
   return l.$==1?l.$1:listEmpty();
 }
@@ -154,13 +237,6 @@ function New(Id, Name, Owner, AssetType, Status, PurchaseYear){
     PurchaseYear:PurchaseYear
   };
 }
-let Laptop={$:0};
-let VirtualMachine={$:3};
-let NetworkDevice={$:4};
-let Desktop={$:1};
-let Active={$:0};
-let InRepair={$:1};
-let Retired={$:2};
 function FailWith(msg){
   throw new Error(msg);
 }
@@ -169,32 +245,177 @@ function KeyValue(kvp){
 }
 function range(min, max_1){
   const count=1+max_1-min;
-  return count<=0?[]:init_1(count, (x) => x+min);
+  return count<=0?[]:init(count, (x) => x+min);
 }
-class attr extends Object_1 { }
 class Var extends Object_1 { }
+class attr extends Object_1 { }
+function Equals(a, b){
+  if(a===b)return true;
+  else {
+    const m=typeof a;
+    if(m=="object"){
+      if(a===null||a===void 0||b===null||b===void 0||!Equals(typeof b, "object"))return false;
+      else if("Equals"in a)return a.Equals(b);
+      else if("Equals"in b)return false;
+      else if(a instanceof Array&&b instanceof Array)return arrayEquals(a, b);
+      else if(a instanceof Date&&b instanceof Date)return dateEquals(a, b);
+      else {
+        const a_1=a;
+        const b_1=b;
+        const eqR=[true];
+        let k;
+        for(var k_2 in a_1)if(((k_3) => {
+          eqR[0]=!a_1.hasOwnProperty(k_3)||b_1.hasOwnProperty(k_3)&&Equals(a_1[k_3], b_1[k_3]);
+          return!eqR[0];
+        })(k_2))break;
+        if(eqR[0]){
+          let k_1;
+          for(var k_3 in b_1)if(((k_4) => {
+            eqR[0]=!b_1.hasOwnProperty(k_4)||a_1.hasOwnProperty(k_4);
+            return!eqR[0];
+          })(k_3))break;
+        }
+        return eqR[0];
+      }
+    }
+    else return m=="function"&&("$Func"in a?a.$Func===b.$Func&&a.$Target===b.$Target:"$Invokes"in a&&"$Invokes"in b&&arrayEquals(a.$Invokes, b.$Invokes));
+  }
+}
+function arrayEquals(a, b){
+  let eq;
+  let i;
+  if(length_1(a)===length_1(b)){
+    eq=true;
+    i=0;
+    while(eq&&i<length_1(a))
+      {
+        !Equals(get(a, i), get(b, i))?eq=false:void 0;
+        i=i+1;
+      }
+    return eq;
+  }
+  else return false;
+}
+function dateEquals(a, b){
+  return a.getTime()===b.getTime();
+}
+function Hash(o){
+  const m=typeof o;
+  return m=="function"?0:m=="boolean"?o?1:0:m=="number"?o:m=="string"?hashString(o):m=="object"?o==null?0:o instanceof Array?hashArray(o):hashObject(o):m=="bigint"?hashString(String(o)):m=="symbol"?hashString(o.description):0;
+}
+function hashString(s){
+  let hash;
+  if(s===null)return 0;
+  else {
+    hash=5381;
+    for(let i=0, _1=s.length-1;i<=_1;i++)hash=hashMix(hash, s[i].charCodeAt());
+    return hash;
+  }
+}
+function hashArray(o){
+  let h=-34948909;
+  for(let i=0, _1=length_1(o)-1;i<=_1;i++)h=hashMix(h, Hash(get(o, i)));
+  return h;
+}
+function hashObject(o){
+  if("GetHashCode"in o)return o.GetHashCode();
+  else {
+    const ____=hashMix;
+    const h=[0];
+    let k;
+    for(var k_1 in o)if(((key) => {
+      h[0]=____(____(h[0], hashString(key)), Hash(o[key]));
+      return false;
+    })(k_1))break;
+    return h[0];
+  }
+}
+function hashMix(x, y){
+  return(x<<5)+x+y;
+}
+function Compare(a, b){
+  if(a===b)return 0;
+  else {
+    const m=typeof a;
+    switch(m=="boolean"?1:m=="number"?1:m=="bigint"?1:m=="string"?1:m=="object"?2:m=="function"?3:m=="symbol"?4:0){
+      case 0:
+        return typeof b=="undefined"?0:-1;
+      case 1:
+        return a<b?-1:1;
+      case 2:
+        if(a===null)return -1;
+        else if(b===null)return 1;
+        else if("CompareTo"in a)return a.CompareTo(b);
+        else if("CompareTo0"in a)return a.CompareTo0(b);
+        else if(a instanceof Array&&b instanceof Array)return compareArrays(a, b);
+        else if(a instanceof Date&&b instanceof Date)return compareDates(a, b);
+        else {
+          const a_1=a;
+          const b_1=b;
+          const cmp=[0];
+          let k;
+          for(var k_2 in a_1)if(((k_3) =>!a_1.hasOwnProperty(k_3)?false:!b_1.hasOwnProperty(k_3)?(cmp[0]=1,true):(cmp[0]=Compare(a_1[k_3], b_1[k_3]),cmp[0]!==0))(k_2))break;
+          if(cmp[0]===0){
+            let k_1;
+            for(var k_3 in b_1)if(((k_4) =>!b_1.hasOwnProperty(k_4)?false:!a_1.hasOwnProperty(k_4)&&(cmp[0]=-1,true))(k_3))break;
+          }
+          return cmp[0];
+        }
+        break;
+      case 3:
+        return FailWith("Cannot compare function values.");
+      case 4:
+        return FailWith("Cannot compare symbol values.");
+    }
+  }
+}
+function compareArrays(a, b){
+  let cmp;
+  let i;
+  if(length_1(a)<length_1(b))return -1;
+  else if(length_1(a)>length_1(b))return 1;
+  else {
+    cmp=0;
+    i=0;
+    while(cmp===0&&i<length_1(a))
+      {
+        cmp=Compare(get(a, i), get(b, i));
+        i=i+1;
+      }
+    return cmp;
+  }
+}
+function compareDates(a, b){
+  return Compare(a.getTime(), b.getTime());
+}
 class Doc extends Object_1 {
   docNode;
   updates;
   static Concat(xs){
     return TreeReduce(Doc.Empty, Doc.Append, ofSeqNonCopying(xs));
   }
+  static get Empty(){
+    return Doc.Mk(null, Const());
+  }
+  static BindView(f, view){
+    return Doc.EmbedView(Map(f, view));
+  }
   static TextNode(v){
     return Doc.Mk(TextNodeDoc(globalThis.document.createTextNode(v)), Const());
+  }
+  static Input(attr_1, var_1){
+    return Doc.InputInternal("input", () => append_1(attr_1, [Value(var_1)]));
   }
   static RunById(id, tr){
     const m=globalThis.document.getElementById(id);
     if(Equals(m, null))FailWith("invalid id: "+id);
     else Doc.Run(m, tr);
   }
-  static BindView(f, view){
-    return Doc.EmbedView(Map(f, view));
-  }
   static Append(a, b){
     return Doc.Mk(AppendDoc(a.docNode, b.docNode), Map2Unit(a.updates, b.updates));
   }
-  static get Empty(){
-    return Doc.Mk(null, Const());
+  static Mk(node, updates){
+    return new Doc(node, updates);
   }
   static EmbedView(view){
     const node=CreateEmbedNode();
@@ -208,8 +429,9 @@ class Doc extends Object_1 {
     const c=Doc.Concat(children);
     return Elt.New(globalThis.document.createElement(name), a, c);
   }
-  static Mk(node, updates){
-    return new Doc(node, updates);
+  static InputInternal(elemTy, attr_1){
+    const el=globalThis.document.createElement(elemTy);
+    return Elt.New(el, Attr.Concat(attr_1(el)), Doc.Empty);
   }
   static Run(parent, doc){
     LinkElement(parent, doc.docNode);
@@ -230,6 +452,10 @@ class Doc extends Object_1 {
 function Map(fn, a){
   return CreateLazy(() => Map_1(fn, a()));
 }
+function Const(x){
+  const o={s:Forever(x)};
+  return() => o;
+}
 function CreateLazy(observe){
   const lv={c:null, o:observe};
   return() => {
@@ -246,10 +472,6 @@ function CreateLazy(observe){
     }
     else return c;
   };
-}
-function Const(x){
-  const o={s:Forever(x)};
-  return() => o;
 }
 function Map2Unit(a, a_1){
   return CreateLazy(() => Map2Unit_1(a(), a_1()));
@@ -277,9 +499,6 @@ class ConcreteVar extends Var {
   get View(){
     return this.view;
   }
-  Get(){
-    return this.current;
-  }
   Set(v){
     if(this.isConst)(((_1) => _1("WebSharper.UI: invalid attempt to change value of a Var after calling SetFinal"))((s) => {
       console.log(s);
@@ -289,6 +508,9 @@ class ConcreteVar extends Var {
       this.current=v;
       this.snap={s:Ready(v, [])};
     }
+  }
+  Get(){
+    return this.current;
   }
   UpdateMaybe(f){
     const m=f(this.Get());
@@ -494,7 +716,28 @@ function set(arr, n, x){
   checkBounds(arr, n);
   arr[n]=x;
 }
+function NewFromSeq(fields){
+  const r={};
+  const e=Get(fields);
+  try {
+    while(e.MoveNext())
+      {
+        const f=e.Current;
+        r[f[0]]=f[1];
+      }
+  }
+  finally {
+    const _1=e;
+    if(typeof _1=="object"&&isIDisposable(_1))e.Dispose();
+  }
+  return r;
+}
 class Attr {
+  static HandlerImpl(event, q){
+    return Attr.A3((el) => {
+      el.addEventListener(event, (d) =>(q(el))(d), false);
+    });
+  }
   static Create(name, value){
     return Attr.A3((el) => {
       el.setAttribute(name, value);
@@ -514,9 +757,18 @@ class Attr {
       $1:Item2
     });
   }
+  static A1(Item){
+    return Create_1(Attr, {$:1, $0:Item});
+  }
   $;
   $0;
   $1;
+}
+function GetFieldValues(o){
+  let r=[];
+  let k;
+  for(var k_1 in o)r.push(o[k_1]);
+  return r;
 }
 function LoadLocalTemplates(baseName){
   !LocalTemplatesLoaded()?(set_LocalTemplatesLoaded(true),LoadNestedTemplates(globalThis.document.body, "")):void 0;
@@ -807,22 +1059,6 @@ function PrepareSingleTemplate(baseName, name, el){
 function TextHoleRE(){
   return _c_2.TextHoleRE;
 }
-function NewFromSeq(fields){
-  const r={};
-  const e=Get(fields);
-  try {
-    while(e.MoveNext())
-      {
-        const f=e.Current;
-        r[f[0]]=f[1];
-      }
-  }
-  finally {
-    const _1=e;
-    if(typeof _1=="object"&&isIDisposable(_1))e.Dispose();
-  }
-  return r;
-}
 function ofSeqNonCopying(xs){
   if(xs instanceof Array)return xs;
   else if(xs instanceof FSharpList)return ofList(xs);
@@ -878,7 +1114,37 @@ function MapTreeReduce(mapping, defaultValue, reduction, array){
   return(loop(0))(l);
 }
 function TryParse(s, r){
-  return TryParse_2(s, -2147483648, 2147483647, r);
+  return TryParse_1(s, -2147483648, 2147483647, r);
+}
+function Trim(s){
+  return s.replace(new RegExp("^\\s+"), "").replace(new RegExp("\\s+$"), "");
+}
+function concat(separator, strings){
+  return ofSeq(strings).join(separator);
+}
+function SplitChars(s, sep, opts){
+  return Split(s, new RegExp("["+RegexEscape(sep.join(""))+"]"), opts);
+}
+function StartsWith(t, s){
+  return t.substring(0, s.length)==s;
+}
+function forall(f, s){
+  return forall_1(f, protect(s));
+}
+function Split(s, pat, opts){
+  return opts===1?filter_1((x) => x!=="", SplitWith(s, pat)):SplitWith(s, pat);
+}
+function RegexEscape(s){
+  return s.replace(new RegExp("[-\\/\\\\^$*+?.()|[\\]{}]", "g"), "\\$&");
+}
+function protect(s){
+  return s==null?"":s;
+}
+function SplitWith(str, pat){
+  return str.split(pat);
+}
+function Some(Value_1){
+  return{$:1, $0:Value_1};
 }
 function Int(){
   set_counter(counter()+1);
@@ -920,7 +1186,10 @@ function AppendTree(a, b){
   }
 }
 function EmptyAttr(){
-  return _c_5.EmptyAttr;
+  return _c_4.EmptyAttr;
+}
+function Dynamic(view, set_1){
+  return Attr.A1(new DynamicAttrNode(view, set_1));
 }
 function Insert(elem, tree){
   const nodes=[];
@@ -944,7 +1213,7 @@ function Insert(elem, tree){
   loop(tree);
   const arr=nodes.slice(0);
   let _1=New_1(elem, Flags(tree), arr, oar.length===0?null:Some((el) => {
-    iter_1((f) => {
+    iter((f) => {
       f(el);
     }, oar);
   }));
@@ -978,10 +1247,10 @@ function GetChangeAnim(dyn){
   return GetAnim(dyn, (_1, _2) => _1.NGetChangeAnim(_2));
 }
 function GetAnim(dyn, f){
-  return Concat(map_1((n) => f(n, dyn.DynElem), dyn.DynNodes));
+  return Concat(map_2((n) => f(n, dyn.DynElem), dyn.DynNodes));
 }
 function Sync(elem, dyn){
-  iter((d) => {
+  iter_1((d) => {
     d.NSync(elem);
   }, dyn.DynNodes);
 }
@@ -1062,11 +1331,183 @@ function EmbedDoc(Item){
 function ElemDoc(Item){
   return{$:1, $0:Item};
 }
-function GetFieldValues(o){
-  let r=[];
-  let k;
-  for(var k_1 in o)r.push(o[k_1]);
-  return r;
+function append_1(s1, s2){
+  return{GetEnumerator:() => {
+    const e1=Get(s1);
+    const first=[true];
+    return new T(e1, null, (x) => {
+      if(x.s.MoveNext()){
+        x.c=x.s.Current;
+        return true;
+      }
+      else {
+        const x_1=x.s;
+        if(!Equals(x_1, null))x_1.Dispose();
+        x.s=null;
+        return first[0]&&(first[0]=false,x.s=Get(s2),x.s.MoveNext()?(x.c=x.s.Current,true):(x.s.Dispose(),x.s=null,false));
+      }
+    }, (x) => {
+      const x_1=x.s;
+      if(!Equals(x_1, null))x_1.Dispose();
+    });
+  }};
+}
+function head_1(s){
+  const e=Get(s);
+  try {
+    return e.MoveNext()?e.Current:insufficient();
+  }
+  finally {
+    const _1=e;
+    if(typeof _1=="object"&&isIDisposable(_1))e.Dispose();
+  }
+}
+function delay(f){
+  return{GetEnumerator:() => Get(f())};
+}
+function collect(f, s){
+  return concat_1(map_1(f, s));
+}
+function map_1(f, s){
+  return{GetEnumerator:() => {
+    const en=Get(s);
+    return new T(null, null, (e) => en.MoveNext()&&(e.c=f(en.Current),true), () => {
+      en.Dispose();
+    });
+  }};
+}
+function fold(f, x, s){
+  let r=x;
+  const e=Get(s);
+  try {
+    while(e.MoveNext())
+      r=f(r, e.Current);
+    return r;
+  }
+  finally {
+    const _1=e;
+    if(typeof _1=="object"&&isIDisposable(_1))e.Dispose();
+  }
+}
+function concat_1(ss){
+  return{GetEnumerator:() => {
+    const outerE=Get(ss);
+    function next(st){
+      while(true)
+        {
+          const m=st.s;
+          if(Equals(m, null)){
+            if(outerE.MoveNext()){
+              st.s=Get(outerE.Current);
+              st=st;
+            }
+            else {
+              outerE.Dispose();
+              return false;
+            }
+          }
+          else if(m.MoveNext()){
+            st.c=m.Current;
+            return true;
+          }
+          else {
+            st.Dispose();
+            st.s=null;
+            st=st;
+          }
+        }
+    }
+    return new T(null, null, next, (st) => {
+      const x=st.s;
+      if(!Equals(x, null))x.Dispose();
+      const x_1=outerE;
+      if(!Equals(x_1, null))x_1.Dispose();
+    });
+  }};
+}
+function init(n, f){
+  return take(n, initInfinite(f));
+}
+function iter(p, s){
+  const e=Get(s);
+  try {
+    while(e.MoveNext())
+      p(e.Current);
+  }
+  finally {
+    const _1=e;
+    if(typeof _1=="object"&&isIDisposable(_1))e.Dispose();
+  }
+}
+function take(n, s){
+  n<0?nonNegative():void 0;
+  return{GetEnumerator:() => {
+    const e=[Get(s)];
+    return new T(0, null, (o) => {
+      o.s=o.s+1;
+      if(o.s>n)return false;
+      else {
+        const en=e[0];
+        return Equals(en, null)?insufficient():en.MoveNext()?(o.c=en.Current,o.s===n?(en.Dispose(),e[0]=null):void 0,true):(en.Dispose(),e[0]=null,insufficient());
+      }
+    }, () => {
+      const x=e[0];
+      if(!Equals(x, null))x.Dispose();
+    });
+  }};
+}
+function initInfinite(f){
+  return{GetEnumerator:() => new T(0, null, (e) => {
+    e.c=f(e.s);
+    e.s=e.s+1;
+    return true;
+  }, void 0)};
+}
+function forall_1(p, s){
+  return!exists((x) =>!p(x), s);
+}
+function exists(p, s){
+  const e=Get(s);
+  try {
+    let r=false;
+    while(!r&&e.MoveNext())
+      r=p(e.Current);
+    return r;
+  }
+  finally {
+    const _1=e;
+    if(typeof _1=="object"&&isIDisposable(_1))e.Dispose();
+  }
+}
+function max(s){
+  const e=Get(s);
+  try {
+    if(!e.MoveNext())seqEmpty();
+    let m=e.Current;
+    while(e.MoveNext())
+      {
+        const x=e.Current;
+        if(Compare(x, m)===1)m=x;
+      }
+    return m;
+  }
+  finally {
+    const _1=e;
+    if(typeof _1=="object"&&isIDisposable(_1))e.Dispose();
+  }
+}
+function seqEmpty(){
+  return FailWith("The input sequence was empty.");
+}
+function Value(var_1){
+  return ValueWith(StringApply(), var_1);
+}
+function ValueWith(bind, var_1){
+  const p=bind(var_1);
+  return AppendTree(Attr.A3(p[0]), DynamicCustom(p[1], p[2]));
+}
+function DynamicCustom(set_1, view){
+  return Dynamic(view, set_1);
 }
 class Dictionary extends Object_1 {
   equals;
@@ -1078,7 +1519,7 @@ class Dictionary extends Object_1 {
   }
   ContainsKey(k){
     const d=this.data[this.hash(k)];
-    return d==null?false:exists((a) => this.equals.apply(null, [(KeyValue(a))[0], k]), d);
+    return d==null?false:exists_1((a) => this.equals.apply(null, [(KeyValue(a))[0], k]), d);
   }
   TryGetValue(k, res){
     const d=this.data[this.hash(k)];
@@ -1126,7 +1567,7 @@ class Dictionary extends Object_1 {
     return this.get(k);
   }
   GetEnumerator(){
-    return Get0(concat(GetFieldValues(this.data)));
+    return Get0(concat_2(GetFieldValues(this.data)));
   }
   get(k){
     const d=this.data[this.hash(k)];
@@ -1166,145 +1607,6 @@ class Dictionary extends Object_1 {
     }
   }
 }
-function Equals(a, b){
-  if(a===b)return true;
-  else {
-    const m=typeof a;
-    if(m=="object"){
-      if(a===null||a===void 0||b===null||b===void 0||!Equals(typeof b, "object"))return false;
-      else if("Equals"in a)return a.Equals(b);
-      else if("Equals"in b)return false;
-      else if(a instanceof Array&&b instanceof Array)return arrayEquals(a, b);
-      else if(a instanceof Date&&b instanceof Date)return dateEquals(a, b);
-      else {
-        const a_1=a;
-        const b_1=b;
-        const eqR=[true];
-        let k;
-        for(var k_2 in a_1)if(((k_3) => {
-          eqR[0]=!a_1.hasOwnProperty(k_3)||b_1.hasOwnProperty(k_3)&&Equals(a_1[k_3], b_1[k_3]);
-          return!eqR[0];
-        })(k_2))break;
-        if(eqR[0]){
-          let k_1;
-          for(var k_3 in b_1)if(((k_4) => {
-            eqR[0]=!b_1.hasOwnProperty(k_4)||a_1.hasOwnProperty(k_4);
-            return!eqR[0];
-          })(k_3))break;
-        }
-        return eqR[0];
-      }
-    }
-    else return m=="function"&&("$Func"in a?a.$Func===b.$Func&&a.$Target===b.$Target:"$Invokes"in a&&"$Invokes"in b&&arrayEquals(a.$Invokes, b.$Invokes));
-  }
-}
-function arrayEquals(a, b){
-  let eq;
-  let i;
-  if(length_1(a)===length_1(b)){
-    eq=true;
-    i=0;
-    while(eq&&i<length_1(a))
-      {
-        !Equals(get(a, i), get(b, i))?eq=false:void 0;
-        i=i+1;
-      }
-    return eq;
-  }
-  else return false;
-}
-function dateEquals(a, b){
-  return a.getTime()===b.getTime();
-}
-function Hash(o){
-  const m=typeof o;
-  return m=="function"?0:m=="boolean"?o?1:0:m=="number"?o:m=="string"?hashString(o):m=="object"?o==null?0:o instanceof Array?hashArray(o):hashObject(o):m=="bigint"?hashString(String(o)):m=="symbol"?hashString(o.description):0;
-}
-function hashString(s){
-  let hash;
-  if(s===null)return 0;
-  else {
-    hash=5381;
-    for(let i=0, _1=s.length-1;i<=_1;i++)hash=hashMix(hash, s[i].charCodeAt());
-    return hash;
-  }
-}
-function hashArray(o){
-  let h=-34948909;
-  for(let i=0, _1=length_1(o)-1;i<=_1;i++)h=hashMix(h, Hash(get(o, i)));
-  return h;
-}
-function hashObject(o){
-  if("GetHashCode"in o)return o.GetHashCode();
-  else {
-    const ____=hashMix;
-    const h=[0];
-    let k;
-    for(var k_1 in o)if(((key) => {
-      h[0]=____(____(h[0], hashString(key)), Hash(o[key]));
-      return false;
-    })(k_1))break;
-    return h[0];
-  }
-}
-function hashMix(x, y){
-  return(x<<5)+x+y;
-}
-function Compare(a, b){
-  if(a===b)return 0;
-  else {
-    const m=typeof a;
-    switch(m=="boolean"?1:m=="number"?1:m=="bigint"?1:m=="string"?1:m=="object"?2:m=="function"?3:m=="symbol"?4:0){
-      case 0:
-        return typeof b=="undefined"?0:-1;
-      case 1:
-        return a<b?-1:1;
-      case 2:
-        if(a===null)return -1;
-        else if(b===null)return 1;
-        else if("CompareTo"in a)return a.CompareTo(b);
-        else if("CompareTo0"in a)return a.CompareTo0(b);
-        else if(a instanceof Array&&b instanceof Array)return compareArrays(a, b);
-        else if(a instanceof Date&&b instanceof Date)return compareDates(a, b);
-        else {
-          const a_1=a;
-          const b_1=b;
-          const cmp=[0];
-          let k;
-          for(var k_2 in a_1)if(((k_3) =>!a_1.hasOwnProperty(k_3)?false:!b_1.hasOwnProperty(k_3)?(cmp[0]=1,true):(cmp[0]=Compare(a_1[k_3], b_1[k_3]),cmp[0]!==0))(k_2))break;
-          if(cmp[0]===0){
-            let k_1;
-            for(var k_3 in b_1)if(((k_4) =>!b_1.hasOwnProperty(k_4)?false:!a_1.hasOwnProperty(k_4)&&(cmp[0]=-1,true))(k_3))break;
-          }
-          return cmp[0];
-        }
-        break;
-      case 3:
-        return FailWith("Cannot compare function values.");
-      case 4:
-        return FailWith("Cannot compare symbol values.");
-    }
-  }
-}
-function compareArrays(a, b){
-  let cmp;
-  let i;
-  if(length_1(a)<length_1(b))return -1;
-  else if(length_1(a)>length_1(b))return 1;
-  else {
-    cmp=0;
-    i=0;
-    while(cmp===0&&i<length_1(a))
-      {
-        cmp=Compare(get(a, i), get(b, i));
-        i=i+1;
-      }
-    return cmp;
-  }
-}
-function compareDates(a, b){
-  return Compare(a.getTime(), b.getTime());
-}
 class View { }
 function ofList(xs){
   const q=[];
@@ -1316,7 +1618,7 @@ function ofList(xs){
     }
   return q;
 }
-function exists(f, x){
+function exists_1(f, x){
   let e=false;
   let i=0;
   const l=length_1(x);
@@ -1351,12 +1653,12 @@ function filter_1(f, arr){
   for(let i=0, _1=arr.length-1;i<=_1;i++)if(f(arr[i]))r.push(arr[i]);
   return r;
 }
-function map_1(f, arr){
+function map_2(f, arr){
   const r=new Array(arr.length);
   for(let i=0, _1=arr.length-1;i<=_1;i++)r[i]=f(arr[i]);
   return r;
 }
-function iter(f, arr){
+function iter_1(f, arr){
   for(let i=0, _1=arr.length-1;i<=_1;i++)f(arr[i]);
 }
 function foldBack(f, arr, zero){
@@ -1365,12 +1667,8 @@ function foldBack(f, arr, zero){
   for(let i=1, _1=len;i<=_1;i++)acc=f(arr[len-i], acc);
   return acc;
 }
-function concat(xs){
+function concat_2(xs){
   return Array.prototype.concat.apply([], ofSeq(xs));
-}
-function pick(f, arr){
-  const m=tryPick(f, arr);
-  return m==null?FailWith("KeyNotFoundException"):m.$0;
 }
 function ofSeq(xs){
   if(xs instanceof Array)return xs.slice();
@@ -1389,6 +1687,10 @@ function ofSeq(xs){
     }
   }
 }
+function pick(f, arr){
+  const m=tryPick(f, arr);
+  return m==null?FailWith("KeyNotFoundException"):m.$0;
+}
 function choose(f, arr){
   const q=[];
   for(let i=0, _1=arr.length-1;i<=_1;i++){
@@ -1403,14 +1705,14 @@ function create(size, value){
   for(let i=0, _1=size-1;i<=_1;i++)r[i]=value;
   return r;
 }
-function init(size, f){
+function init_1(size, f){
   if(size<0)FailWith("Negative size given.");
   else null;
   const r=new Array(size);
   for(let i=0, _1=size-1;i<=_1;i++)r[i]=f(i);
   return r;
 }
-function forall(f, x){
+function forall_2(f, x){
   let a=true;
   let i=0;
   const l=length_1(x);
@@ -1475,7 +1777,7 @@ function InsertDoc(parent, doc, pos){
     }
 }
 function CreateRunState(parent, doc){
-  return New_2(get_Empty(), CreateElemNode(parent, EmptyAttr(), doc));
+  return New_2(get_Empty_1(), CreateElemNode(parent, EmptyAttr(), doc));
 }
 function PerformAnimatedUpdate(childrenOnly, st, doc){
   return get_UseAnimations()?Delay(() => {
@@ -1518,15 +1820,15 @@ function SyncElemNodesNextFrame(childrenOnly, st){
   }
 }
 function ComputeExitAnim(st, cur){
-  return Concat(map_1((n) => GetExitAnim(n.Attr), ToArray(Except(cur, Filter((n) => HasExitAnim(n.Attr), st.PreviousNodes)))));
+  return Concat(map_2((n) => GetExitAnim(n.Attr), ToArray(Except(cur, Filter((n) => HasExitAnim(n.Attr), st.PreviousNodes)))));
 }
 function ComputeEnterAnim(st, cur){
-  return Concat(map_1((n) => GetEnterAnim(n.Attr), ToArray(Except(st.PreviousNodes, Filter((n) => HasEnterAnim(n.Attr), cur)))));
+  return Concat(map_2((n) => GetEnterAnim(n.Attr), ToArray(Except(st.PreviousNodes, Filter((n) => HasEnterAnim(n.Attr), cur)))));
 }
 function ComputeChangeAnim(st, cur){
   const f=(n) => HasChangeAnim(n.Attr);
   const relevant=(a) => Filter(f, a);
-  return Concat(map_1((n) => GetChangeAnim(n.Attr), ToArray(Intersect(relevant(st.PreviousNodes), relevant(cur)))));
+  return Concat(map_2((n) => GetChangeAnim(n.Attr), ToArray(Intersect(relevant(st.PreviousNodes), relevant(cur)))));
 }
 function SyncElemNode(childrenOnly, el){
   !childrenOnly?SyncElement(el):void 0;
@@ -1551,7 +1853,7 @@ function SyncElement(el){
           }
           else if(doc!=null&&doc.$==6){
             const t=doc.$0;
-            return t.Dirty||exists(hasDirtyChildren, t.Holes);
+            return t.Dirty||exists_1(hasDirtyChildren, t.Holes);
           }
           else return false;
         }
@@ -1577,10 +1879,10 @@ function Sync_1(doc){
       }
       else if(doc!=null&&doc.$==6){
         const t=doc.$0;
-        iter((h) => {
+        iter_1((h) => {
           SyncElemNode(false, h);
         }, t.Holes);
-        iter((t_1) => {
+        iter_1((t_1) => {
           Sync(t_1[0], t_1[1]);
         }, t.Attrs);
         return AfterRender(t);
@@ -1638,6 +1940,148 @@ function DoSyncElement(el){
   const m=GetOptional(el.Delimiters);
   let _2=m!=null&&m.$==1?m.$0[1]:null;
   ins(_1, _2);
+}
+function TryParse_1(s, min, max_1, r){
+  const x=+s;
+  const ok=x===x-x%1&&x>=min&&x<=max_1;
+  if(ok)r.set(x);
+  return ok;
+}
+function Get(x){
+  return x instanceof Array?ArrayEnumerator(x):Equals(typeof x, "string")?StringEnumerator(x):x.GetEnumerator();
+}
+function ArrayEnumerator(s){
+  return new T(0, null, (e) => {
+    const i=e.s;
+    return i<length_1(s)&&(e.c=get(s, i),e.s=i+1,true);
+  }, void 0);
+}
+function StringEnumerator(s){
+  return new T(0, null, (e) => {
+    const i=e.s;
+    return i<s.length&&(e.c=s[i],e.s=i+1,true);
+  }, void 0);
+}
+function Get0(x){
+  return x instanceof Array?ArrayEnumerator(x):Equals(typeof x, "string")?StringEnumerator(x):"GetEnumerator0"in x?x.GetEnumerator0():x.GetEnumerator();
+}
+class T extends Object_1 {
+  s;
+  c;
+  n;
+  d;
+  e;
+  MoveNext(){
+    const m=this.n(this);
+    this.e=m?1:2;
+    return m;
+  }
+  get Current(){
+    return this.e===1?this.c:this.e===0?FailWith("Enumeration has not started. Call MoveNext."):FailWith("Enumeration already finished.");
+  }
+  Dispose(){
+    if(this.d)this.d(this);
+  }
+  constructor(s, c, n, d){
+    super();
+    this.s=s;
+    this.c=c;
+    this.n=n;
+    this.d=d;
+    this.e=0;
+  }
+}
+function StringApply(){
+  return _c_4.StringApply;
+}
+function ApplyValue(get_1, set_1, var_1){
+  let expectedValue;
+  expectedValue=null;
+  return[(el) => {
+    const onChange=() => {
+      var_1.UpdateMaybe((v) => {
+        let _1;
+        expectedValue=get_1(el);
+        return expectedValue!=null&&expectedValue.$==1&&(!Equals(expectedValue.$0, v)&&(_1=[expectedValue, expectedValue.$0],true))?_1[0]:null;
+      });
+    };
+    el.addEventListener("change", onChange);
+    el.addEventListener("input", onChange);
+    el.addEventListener("keypress", onChange);
+  }, (x) => {
+    const _1=set_1(x);
+    return(_2) => _2==null?null:_1(_2.$0);
+  }, Map((v) => {
+    let _1;
+    return expectedValue!=null&&expectedValue.$==1&&(Equals(expectedValue.$0, v)&&(_1=expectedValue.$0,true))?null:Some(v);
+  }, var_1.View)];
+}
+function StringSet(){
+  return _c_4.StringSet;
+}
+function StringGet(){
+  return _c_4.StringGet;
+}
+function StringListSet(){
+  return _c_4.StringListSet;
+}
+function StringListGet(){
+  return _c_4.StringListGet;
+}
+function DateTimeSetUnchecked(){
+  return _c_4.DateTimeSetUnchecked;
+}
+function DateTimeGetUnchecked(){
+  return _c_4.DateTimeGetUnchecked;
+}
+function FileApplyValue(get_1, set_1, var_1){
+  let expectedValue;
+  expectedValue=null;
+  return[(el) => {
+    el.addEventListener("change", () => {
+      var_1.UpdateMaybe((v) => {
+        let _1;
+        expectedValue=get_1(el);
+        return expectedValue!=null&&expectedValue.$==1&&(expectedValue.$0!==v&&(_1=[expectedValue, expectedValue.$0],true))?_1[0]:null;
+      });
+    });
+  }, (x) => {
+    const _1=set_1(x);
+    return(_2) => _2==null?null:_1(_2.$0);
+  }, Map((v) => {
+    let _1;
+    return expectedValue!=null&&expectedValue.$==1&&(Equals(expectedValue.$0, v)&&(_1=expectedValue.$0,true))?null:Some(v);
+  }, var_1.View)];
+}
+function FileSetUnchecked(){
+  return _c_4.FileSetUnchecked;
+}
+function FileGetUnchecked(){
+  return _c_4.FileGetUnchecked;
+}
+function IntSetUnchecked(){
+  return _c_4.IntSetUnchecked;
+}
+function IntGetUnchecked(){
+  return _c_4.IntGetUnchecked;
+}
+function IntSetChecked(){
+  return _c_4.IntSetChecked;
+}
+function IntGetChecked(){
+  return _c_4.IntGetChecked;
+}
+function FloatSetUnchecked(){
+  return _c_4.FloatSetUnchecked;
+}
+function FloatGetUnchecked(){
+  return _c_4.FloatGetUnchecked;
+}
+function FloatSetChecked(){
+  return _c_4.FloatSetChecked;
+}
+function FloatGetChecked(){
+  return _c_4.FloatGetChecked;
 }
 let _c_2=Lazy((_i) => class $StartupCode_Templates {
   static {
@@ -1763,156 +2207,6 @@ class HashSet extends Object_1 {
     }
   }
 }
-function Some(Value){
-  return{$:1, $0:Value};
-}
-function head_1(s){
-  const e=Get(s);
-  try {
-    return e.MoveNext()?e.Current:insufficient();
-  }
-  finally {
-    const _1=e;
-    if(typeof _1=="object"&&isIDisposable(_1))e.Dispose();
-  }
-}
-function fold(f, x, s){
-  let r=x;
-  const e=Get(s);
-  try {
-    while(e.MoveNext())
-      r=f(r, e.Current);
-    return r;
-  }
-  finally {
-    const _1=e;
-    if(typeof _1=="object"&&isIDisposable(_1))e.Dispose();
-  }
-}
-function iter_1(p, s){
-  const e=Get(s);
-  try {
-    while(e.MoveNext())
-      p(e.Current);
-  }
-  finally {
-    const _1=e;
-    if(typeof _1=="object"&&isIDisposable(_1))e.Dispose();
-  }
-}
-function delay(f){
-  return{GetEnumerator:() => Get(f())};
-}
-function collect(f, s){
-  return concat_1(map_2(f, s));
-}
-function map_2(f, s){
-  return{GetEnumerator:() => {
-    const en=Get(s);
-    return new T(null, null, (e) => en.MoveNext()&&(e.c=f(en.Current),true), () => {
-      en.Dispose();
-    });
-  }};
-}
-function concat_1(ss){
-  return{GetEnumerator:() => {
-    const outerE=Get(ss);
-    function next(st){
-      while(true)
-        {
-          const m=st.s;
-          if(Equals(m, null)){
-            if(outerE.MoveNext()){
-              st.s=Get(outerE.Current);
-              st=st;
-            }
-            else {
-              outerE.Dispose();
-              return false;
-            }
-          }
-          else if(m.MoveNext()){
-            st.c=m.Current;
-            return true;
-          }
-          else {
-            st.Dispose();
-            st.s=null;
-            st=st;
-          }
-        }
-    }
-    return new T(null, null, next, (st) => {
-      const x=st.s;
-      if(!Equals(x, null))x.Dispose();
-      const x_1=outerE;
-      if(!Equals(x_1, null))x_1.Dispose();
-    });
-  }};
-}
-function init_1(n, f){
-  return take(n, initInfinite(f));
-}
-function max(s){
-  const e=Get(s);
-  try {
-    if(!e.MoveNext())seqEmpty();
-    let m=e.Current;
-    while(e.MoveNext())
-      {
-        const x=e.Current;
-        if(Compare(x, m)===1)m=x;
-      }
-    return m;
-  }
-  finally {
-    const _1=e;
-    if(typeof _1=="object"&&isIDisposable(_1))e.Dispose();
-  }
-}
-function take(n, s){
-  n<0?nonNegative():void 0;
-  return{GetEnumerator:() => {
-    const e=[Get(s)];
-    return new T(0, null, (o) => {
-      o.s=o.s+1;
-      if(o.s>n)return false;
-      else {
-        const en=e[0];
-        return Equals(en, null)?insufficient():en.MoveNext()?(o.c=en.Current,o.s===n?(en.Dispose(),e[0]=null):void 0,true):(en.Dispose(),e[0]=null,insufficient());
-      }
-    }, () => {
-      const x=e[0];
-      if(!Equals(x, null))x.Dispose();
-    });
-  }};
-}
-function initInfinite(f){
-  return{GetEnumerator:() => new T(0, null, (e) => {
-    e.c=f(e.s);
-    e.s=e.s+1;
-    return true;
-  }, void 0)};
-}
-function forall_1(p, s){
-  return!exists_1((x) =>!p(x), s);
-}
-function seqEmpty(){
-  return FailWith("The input sequence was empty.");
-}
-function exists_1(p, s){
-  const e=Get(s);
-  try {
-    let r=false;
-    while(!r&&e.MoveNext())
-      r=p(e.Current);
-    return r;
-  }
-  finally {
-    const _1=e;
-    if(typeof _1=="object"&&isIDisposable(_1))e.Dispose();
-  }
-}
 class Exception extends Object_1 { }
 class DocElemNode {
   Attr;
@@ -1936,50 +2230,6 @@ class DocElemNode {
     };
     let _2=(SetOptional(_1, "Delimiters", Delimiters),SetOptional(_1, "Render", Render),_1);
     return Create_1(DocElemNode, _2);
-  }
-}
-function Get(x){
-  return x instanceof Array?ArrayEnumerator(x):Equals(typeof x, "string")?StringEnumerator(x):x.GetEnumerator();
-}
-function ArrayEnumerator(s){
-  return new T(0, null, (e) => {
-    const i=e.s;
-    return i<length_1(s)&&(e.c=get(s, i),e.s=i+1,true);
-  }, void 0);
-}
-function StringEnumerator(s){
-  return new T(0, null, (e) => {
-    const i=e.s;
-    return i<s.length&&(e.c=s[i],e.s=i+1,true);
-  }, void 0);
-}
-function Get0(x){
-  return x instanceof Array?ArrayEnumerator(x):Equals(typeof x, "string")?StringEnumerator(x):"GetEnumerator0"in x?x.GetEnumerator0():x.GetEnumerator();
-}
-class T extends Object_1 {
-  s;
-  c;
-  n;
-  d;
-  e;
-  MoveNext(){
-    const m=this.n(this);
-    this.e=m?1:2;
-    return m;
-  }
-  get Current(){
-    return this.e===1?this.c:this.e===0?FailWith("Enumeration has not started. Call MoveNext."):FailWith("Enumeration already finished.");
-  }
-  Dispose(){
-    if(this.d)this.d(this);
-  }
-  constructor(s, c, n, d){
-    super();
-    this.s=s;
-    this.c=c;
-    this.n=n;
-    this.d=d;
-    this.e=0;
   }
 }
 let _c_3=Lazy((_i) => class $StartupCode_Abbrev {
@@ -2009,6 +2259,156 @@ class Elt extends Doc {
     this.rvUpdates=rvUpdates;
   }
 }
+let _c_4=Lazy((_i) => class Client {
+  static {
+    _c_4=_i(this);
+  }
+  static FloatApplyChecked;
+  static FloatGetChecked;
+  static FloatSetChecked;
+  static FloatApplyUnchecked;
+  static FloatGetUnchecked;
+  static FloatSetUnchecked;
+  static IntApplyChecked;
+  static IntGetChecked;
+  static IntSetChecked;
+  static IntApplyUnchecked;
+  static IntGetUnchecked;
+  static IntSetUnchecked;
+  static FileApplyUnchecked;
+  static FileGetUnchecked;
+  static FileSetUnchecked;
+  static DateTimeApplyUnchecked;
+  static DateTimeGetUnchecked;
+  static DateTimeSetUnchecked;
+  static StringListApply;
+  static StringListGet;
+  static StringListSet;
+  static StringApply;
+  static StringGet;
+  static StringSet;
+  static BoolCheckedApply;
+  static EmptyAttr;
+  static {
+    this.EmptyAttr=null;
+    this.BoolCheckedApply=(var_1) =>[(el) => {
+      el.addEventListener("change", () => var_1.Get()!=el.checked?var_1.Set(el.checked):null);
+    }, (_1) =>(_2) => _2!=null&&_2.$==1?void(_1.checked=_2.$0):null, Map((V) => Some(V), var_1.View)];
+    this.StringSet=(el) =>(s_8) => {
+      el.value=s_8;
+    };
+    this.StringGet=(el) => Some(el.value);
+    const g=StringGet();
+    const s=StringSet();
+    this.StringApply=(v) => ApplyValue(g, s, v);
+    this.StringListSet=(el) =>(s_8) => {
+      const options_=el.options;
+      for(let i=0, _1=options_.length-1;i<=_1;i++)((() => {
+        const option=options_.item(i);
+        option.selected=arrContains(option.value, s_8);
+      })());
+    };
+    this.StringListGet=(el) => {
+      const selectedOptions=el.selectedOptions;
+      return Some(ofSeq(delay(() => collect((i) =>[selectedOptions.item(i).value], range(0, selectedOptions.length-1)))));
+    };
+    const g_1=StringListGet();
+    const s_1=StringListSet();
+    this.StringListApply=(v) => ApplyValue(g_1, s_1, v);
+    this.DateTimeSetUnchecked=(el) =>(i) => {
+      el.value=(new Date(i)).toLocaleString();
+    };
+    this.DateTimeGetUnchecked=(el) => {
+      let o;
+      let m;
+      const s_8=el.value;
+      if(isBlank(s_8))return Some(-8640000000000000);
+      else {
+        o=0;
+        const m_1=TryParse_2(s_8);
+        let _1=m_1!=null&&m_1.$==1&&(o=m_1.$0,true);
+        m=[_1, o];
+        return m[0]?Some(m[1]):null;
+      }
+    };
+    const g_2=DateTimeGetUnchecked();
+    const s_2=DateTimeSetUnchecked();
+    this.DateTimeApplyUnchecked=(v) => ApplyValue(g_2, s_2, v);
+    this.FileSetUnchecked=() =>() => null;
+    this.FileGetUnchecked=(el) => {
+      const files=el.files;
+      return Some(ofSeq(delay(() => map_1((i) => files.item(i), range(0, files.length-1)))));
+    };
+    const g_3=FileGetUnchecked();
+    const s_3=FileSetUnchecked();
+    this.FileApplyUnchecked=(v) => FileApplyValue(g_3, s_3, v);
+    this.IntSetUnchecked=(el) =>(i) => {
+      el.value=String(i);
+    };
+    this.IntGetUnchecked=(el) => {
+      const s_8=el.value;
+      if(isBlank(s_8))return Some(0);
+      else {
+        const pd=+s_8;
+        return pd!==pd>>0?null:Some(pd);
+      }
+    };
+    const g_4=IntGetUnchecked();
+    const s_4=IntSetUnchecked();
+    this.IntApplyUnchecked=(v) => ApplyValue(g_4, s_4, v);
+    this.IntSetChecked=(el) =>(i) => {
+      const i_1=i.Input;
+      return el.value!=i_1?void(el.value=i_1):null;
+    };
+    this.IntGetChecked=(el) => {
+      let _1;
+      let o;
+      const s_8=el.value;
+      if(isBlank(s_8))_1=(el.checkValidity?el.checkValidity():true)?CheckedInput.Blank(s_8):CheckedInput.Invalid(s_8);
+      else {
+        const m=(o=0,[TryParse(s_8, {get:() => o, set:(v) => {
+          o=v;
+        }}), o]);
+        _1=m[0]?CheckedInput.Valid(m[1], s_8):CheckedInput.Invalid(s_8);
+      }
+      return Some(_1);
+    };
+    const g_5=IntGetChecked();
+    const s_5=IntSetChecked();
+    this.IntApplyChecked=(v) => ApplyValue(g_5, s_5, v);
+    this.FloatSetUnchecked=(el) =>(i) => {
+      el.value=String(i);
+    };
+    this.FloatGetUnchecked=(el) => {
+      const s_8=el.value;
+      if(isBlank(s_8))return Some(0);
+      else {
+        const pd=+s_8;
+        return isNaN(pd)?null:Some(pd);
+      }
+    };
+    const g_6=FloatGetUnchecked();
+    const s_6=FloatSetUnchecked();
+    this.FloatApplyUnchecked=(v) => ApplyValue(g_6, s_6, v);
+    this.FloatSetChecked=(el) =>(i) => {
+      const i_1=i.Input;
+      return el.value!=i_1?void(el.value=i_1):null;
+    };
+    this.FloatGetChecked=(el) => {
+      let _1;
+      const s_8=el.value;
+      if(isBlank(s_8))_1=(el.checkValidity?el.checkValidity():true)?CheckedInput.Blank(s_8):CheckedInput.Invalid(s_8);
+      else {
+        const i=+s_8;
+        _1=isNaN(i)?CheckedInput.Invalid(s_8):CheckedInput.Valid(i, s_8);
+      }
+      return Some(_1);
+    };
+    const g_7=FloatGetChecked();
+    const s_7=FloatSetChecked();
+    this.FloatApplyChecked=(v) => ApplyValue(g_7, s_7, v);
+  }
+});
 class TemplateHole extends Object_1 { }
 function notPresent(){
   throw new KeyNotFoundException("New");
@@ -2056,7 +2456,7 @@ function removeHolesExcept(instance, dontRemove){
     if(!dontRemove.Contains(e.getAttribute("ws-replace")))e.parentNode.removeChild(e);
   });
   foreachNotPreserved(instance, "[ws-on]", (e) => {
-    e.setAttribute("ws-on", concat_2(" ", filter_1((x) => dontRemove.Contains(get(SplitChars(x, [":"], 1), 1)), SplitChars(e.getAttribute("ws-on"), [" "], 1))));
+    e.setAttribute("ws-on", concat(" ", filter_1((x) => dontRemove.Contains(get(SplitChars(x, [":"], 1), 1)), SplitChars(e.getAttribute("ws-on"), [" "], 1))));
   });
   foreachNotPreserved(instance, "[ws-attr-holes]", (e) => {
     const holeAttrs=SplitChars(e.getAttribute("ws-attr-holes"), [" "], 1);
@@ -2098,7 +2498,7 @@ function mapHoles(t, mappings){
   run("ws-onafterrender");
   run("ws-var");
   foreachNotPreserved(t, "[ws-on]", (e) => {
-    e.setAttribute("ws-on", concat_2(" ", map_1((x) => {
+    e.setAttribute("ws-on", concat(" ", map_2((x) => {
       let o;
       const a=SplitChars(x, [":"], 1);
       const m=(o=null,[mappings.TryGetValue(get(a, 1), {get:() => o, set:(v) => {
@@ -2144,8 +2544,8 @@ function convertAttrs(el){
     }
     else void 0;
   }
-  if(!(events.length==0))el.setAttribute("ws-on", concat_2(" ", events));
-  if(!(holedAttrs.length==0))el.setAttribute("ws-attr-holes", concat_2(" ", holedAttrs));
+  if(!(events.length==0))el.setAttribute("ws-on", concat(" ", events));
+  if(!(holedAttrs.length==0))el.setAttribute("ws-attr-holes", concat(" ", holedAttrs));
   const lowercaseAttr=(name) => {
     const m=el.getAttribute(name);
     if(m==null){ }
@@ -2156,7 +2556,7 @@ function convertAttrs(el){
   lowercaseAttr("ws-attr");
   lowercaseAttr("ws-onafterrender");
   lowercaseAttr("ws-var");
-  iter((a_1) => {
+  iter_1((a_1) => {
     el.removeAttribute(a_1);
   }, toRemove);
 }
@@ -2193,7 +2593,7 @@ function nonNegative(){
 class KeyCollection extends Object_1 {
   d;
   GetEnumerator(){
-    return Get(map_2((kvp) => kvp.K, this.d));
+    return Get(map_1((kvp) => kvp.K, this.d));
   }
   constructor(d){
     super();
@@ -2238,10 +2638,13 @@ function Anim(Item){
   return{$:0, $0:Item};
 }
 function Concat(xs){
-  return Anim(Concat_1(map_2(List, xs)));
+  return Anim(Concat_1(map_1(List, xs)));
+}
+function get_Empty(){
+  return Anim(Empty());
 }
 function BatchUpdatesEnabled(){
-  return _c_4.BatchUpdatesEnabled;
+  return _c_5.BatchUpdatesEnabled;
 }
 function StartProcessor(procAsync){
   const st=[0];
@@ -2293,34 +2696,34 @@ class Updates_1 {
     });
   }
 }
-function concat_2(separator, strings){
-  return ofSeq(strings).join(separator);
+function isBlank(s){
+  return forall(IsWhiteSpace, s);
 }
-function SplitChars(s, sep, opts){
-  return Split(s, new RegExp("["+RegexEscape(sep.join(""))+"]"), opts);
-}
-function StartsWith(t, s){
-  return t.substring(0, s.length)==s;
-}
-function Split(s, pat, opts){
-  return opts===1?filter_1((x) => x!=="", SplitWith(s, pat)):SplitWith(s, pat);
-}
-function RegexEscape(s){
-  return s.replace(new RegExp("[-\\/\\\\^$*+?.()|[\\]{}]", "g"), "\\$&");
-}
-function SplitWith(str, pat){
-  return str.split(pat);
-}
-function forall_2(f, s){
-  return forall_1(f, protect(s));
-}
-function protect(s){
-  return s==null?"":s;
+class CheckedInput {
+  get Input(){
+    return this.$==1?this.$0:this.$==2?this.$0:this.$1;
+  }
+  static Blank(inputText){
+    return Create_1(CheckedInput, {$:2, $0:inputText});
+  }
+  static Invalid(inputText){
+    return Create_1(CheckedInput, {$:1, $0:inputText});
+  }
+  static Valid(value, inputText){
+    return Create_1(CheckedInput, {
+      $:0, 
+      $0:value, 
+      $1:inputText
+    });
+  }
+  $;
+  $0;
+  $1;
 }
 function New_2(PreviousNodes, Top){
   return{PreviousNodes:PreviousNodes, Top:Top};
 }
-function get_Empty(){
+function get_Empty_1(){
   return NodeSet(new HashSet("New_3"));
 }
 function FindAll(doc){
@@ -2347,7 +2750,7 @@ function FindAll(doc){
           else if(_1!=null&&_1.$==6){
             const x=_1.$0.Holes;
             return(((a_1) =>(a_2) => {
-              iter(a_1, a_2);
+              iter_1(a_1, a_2);
             })(loopEN))(x);
           }
           else return null;
@@ -2480,7 +2883,7 @@ function Actions(a){
   return ConcatActions(choose((a_1) => a_1.$==1?Some(a_1.$0):null, ToArray_1(a.$0)));
 }
 function Finalize(a){
-  iter((a_1) => {
+  iter_1((a_1) => {
     if(a_1.$==0)a_1.$0();
   }, ToArray_1(a.$0));
 }
@@ -2490,10 +2893,10 @@ function ConcatActions(xs){
   if(m===0)return Const_1();
   else if(m===1)return get(xs_1, 0);
   else {
-    const dur=max(map_2((anim) => anim.Duration, xs_1));
-    const xs_2=map_1((x) => Prolong(dur, x), xs_1);
+    const dur=max(map_1((anim) => anim.Duration, xs_1));
+    const xs_2=map_2((x) => Prolong(dur, x), xs_1);
     return Def(dur, (t) => {
-      iter((anim) => {
+      iter_1((anim) => {
         anim.Compute(t);
       }, xs_2);
     });
@@ -2514,9 +2917,9 @@ function Prolong(nextDuration, anim){
   const last=Create(() => anim.Compute(anim.Duration));
   return{Compute:(t) => t>=dur?last.f():comp(t), Duration:nextDuration};
 }
-let _c_4=Lazy((_i) => class Proxy {
+let _c_5=Lazy((_i) => class Proxy {
   static {
-    _c_4=_i(this);
+    _c_5=_i(this);
   }
   static BatchUpdatesEnabled;
   static {
@@ -2526,156 +2929,47 @@ let _c_4=Lazy((_i) => class Proxy {
 function Clear(a){
   a.splice(0, length_1(a));
 }
-let _c_5=Lazy((_i) => class Client {
-  static {
-    _c_5=_i(this);
+class DynamicAttrNode extends Object_1 {
+  push;
+  value;
+  dirty;
+  updates;
+  get NChanged(){
+    return this.updates;
   }
-  static FloatApplyChecked;
-  static FloatGetChecked;
-  static FloatSetChecked;
-  static FloatApplyUnchecked;
-  static FloatGetUnchecked;
-  static FloatSetUnchecked;
-  static IntApplyChecked;
-  static IntGetChecked;
-  static IntSetChecked;
-  static IntApplyUnchecked;
-  static IntGetUnchecked;
-  static IntSetUnchecked;
-  static FileApplyUnchecked;
-  static FileGetUnchecked;
-  static FileSetUnchecked;
-  static DateTimeApplyUnchecked;
-  static DateTimeGetUnchecked;
-  static DateTimeSetUnchecked;
-  static StringListApply;
-  static StringListGet;
-  static StringListSet;
-  static StringApply;
-  static StringGet;
-  static StringSet;
-  static BoolCheckedApply;
-  static EmptyAttr;
-  static {
-    this.EmptyAttr=null;
-    this.BoolCheckedApply=(var_1) =>[(el) => {
-      el.addEventListener("change", () => var_1.Get()!=el.checked?var_1.Set(el.checked):null);
-    }, (_1) =>(_2) => _2!=null&&_2.$==1?void(_1.checked=_2.$0):null, Map((V) => Some(V), var_1.View)];
-    this.StringSet=(el) =>(s_8) => {
-      el.value=s_8;
-    };
-    this.StringGet=(el) => Some(el.value);
-    const g=StringGet();
-    const s=StringSet();
-    this.StringApply=(v) => ApplyValue(g, s, v);
-    this.StringListSet=(el) =>(s_8) => {
-      const options_=el.options;
-      for(let i=0, _1=options_.length-1;i<=_1;i++)((() => {
-        const option=options_.item(i);
-        option.selected=arrContains(option.value, s_8);
-      })());
-    };
-    this.StringListGet=(el) => {
-      const selectedOptions=el.selectedOptions;
-      return Some(ofSeq(delay(() => collect((i) =>[selectedOptions.item(i).value], range(0, selectedOptions.length-1)))));
-    };
-    const g_1=StringListGet();
-    const s_1=StringListSet();
-    this.StringListApply=(v) => ApplyValue(g_1, s_1, v);
-    this.DateTimeSetUnchecked=(el) =>(i) => {
-      el.value=(new Date(i)).toLocaleString();
-    };
-    this.DateTimeGetUnchecked=(el) => {
-      let o;
-      let m;
-      const s_8=el.value;
-      if(isBlank(s_8))return Some(-8640000000000000);
-      else {
-        o=0;
-        const m_1=TryParse_1(s_8);
-        let _1=m_1!=null&&m_1.$==1&&(o=m_1.$0,true);
-        m=[_1, o];
-        return m[0]?Some(m[1]):null;
-      }
-    };
-    const g_2=DateTimeGetUnchecked();
-    const s_2=DateTimeSetUnchecked();
-    this.DateTimeApplyUnchecked=(v) => ApplyValue(g_2, s_2, v);
-    this.FileSetUnchecked=() =>() => null;
-    this.FileGetUnchecked=(el) => {
-      const files=el.files;
-      return Some(ofSeq(delay(() => map_2((i) => files.item(i), range(0, files.length-1)))));
-    };
-    const g_3=FileGetUnchecked();
-    const s_3=FileSetUnchecked();
-    this.FileApplyUnchecked=(v) => FileApplyValue(g_3, s_3, v);
-    this.IntSetUnchecked=(el) =>(i) => {
-      el.value=String(i);
-    };
-    this.IntGetUnchecked=(el) => {
-      const s_8=el.value;
-      if(isBlank(s_8))return Some(0);
-      else {
-        const pd=+s_8;
-        return pd!==pd>>0?null:Some(pd);
-      }
-    };
-    const g_4=IntGetUnchecked();
-    const s_4=IntSetUnchecked();
-    this.IntApplyUnchecked=(v) => ApplyValue(g_4, s_4, v);
-    this.IntSetChecked=(el) =>(i) => {
-      const i_1=i.Input;
-      return el.value!=i_1?void(el.value=i_1):null;
-    };
-    this.IntGetChecked=(el) => {
-      let _1;
-      let o;
-      const s_8=el.value;
-      if(isBlank(s_8))_1=(el.checkValidity?el.checkValidity():true)?CheckedInput.Blank(s_8):CheckedInput.Invalid(s_8);
-      else {
-        const m=(o=0,[TryParse(s_8, {get:() => o, set:(v) => {
-          o=v;
-        }}), o]);
-        _1=m[0]?CheckedInput.Valid(m[1], s_8):CheckedInput.Invalid(s_8);
-      }
-      return Some(_1);
-    };
-    const g_5=IntGetChecked();
-    const s_5=IntSetChecked();
-    this.IntApplyChecked=(v) => ApplyValue(g_5, s_5, v);
-    this.FloatSetUnchecked=(el) =>(i) => {
-      el.value=String(i);
-    };
-    this.FloatGetUnchecked=(el) => {
-      const s_8=el.value;
-      if(isBlank(s_8))return Some(0);
-      else {
-        const pd=+s_8;
-        return isNaN(pd)?null:Some(pd);
-      }
-    };
-    const g_6=FloatGetUnchecked();
-    const s_6=FloatSetUnchecked();
-    this.FloatApplyUnchecked=(v) => ApplyValue(g_6, s_6, v);
-    this.FloatSetChecked=(el) =>(i) => {
-      const i_1=i.Input;
-      return el.value!=i_1?void(el.value=i_1):null;
-    };
-    this.FloatGetChecked=(el) => {
-      let _1;
-      const s_8=el.value;
-      if(isBlank(s_8))_1=(el.checkValidity?el.checkValidity():true)?CheckedInput.Blank(s_8):CheckedInput.Invalid(s_8);
-      else {
-        const i=+s_8;
-        _1=isNaN(i)?CheckedInput.Invalid(s_8):CheckedInput.Valid(i, s_8);
-      }
-      return Some(_1);
-    };
-    const g_7=FloatGetChecked();
-    const s_7=FloatSetChecked();
-    this.FloatApplyChecked=(v) => ApplyValue(g_7, s_7, v);
+  NGetExitAnim(parent){
+    return get_Empty();
   }
-});
+  NGetEnterAnim(parent){
+    return get_Empty();
+  }
+  NGetChangeAnim(parent){
+    return get_Empty();
+  }
+  NSync(parent){
+    if(this.dirty){
+      (this.push(parent))(this.value);
+      this.dirty=false;
+    }
+  }
+  constructor(view, push){
+    super();
+    this.push=push;
+    this.value=void 0;
+    this.dirty=false;
+    this.updates=Map((x) => {
+      this.value=x;
+      this.dirty=true;
+    }, view);
+  }
+}
+function IsWhiteSpace(c){
+  return c.match(new RegExp("\\s"))!==null;
+}
+function TryParse_2(s){
+  const d=Date.parse(s);
+  return isNaN(d)?null:Some(d);
+}
 let _c_6=Lazy((_i) => class $StartupCode_DomUtility {
   static {
     _c_6=_i(this);
@@ -2728,7 +3022,7 @@ function ToArray_1(xs){
           loop(x);
           xs_1=y;
         }
-        else return xs_1.$==3?iter((v) => {
+        else return xs_1.$==3?iter_1((v) => {
           out.push(v);
         }, xs_1.$0):null;
       }
@@ -2748,119 +3042,6 @@ function concat_3(o){
   let k;
   for(var k_1 in o)r.push.apply(r, o[k_1]);
   return r;
-}
-function ApplyValue(get_1, set_1, var_1){
-  let expectedValue;
-  expectedValue=null;
-  return[(el) => {
-    const onChange=() => {
-      var_1.UpdateMaybe((v) => {
-        let _1;
-        expectedValue=get_1(el);
-        return expectedValue!=null&&expectedValue.$==1&&(!Equals(expectedValue.$0, v)&&(_1=[expectedValue, expectedValue.$0],true))?_1[0]:null;
-      });
-    };
-    el.addEventListener("change", onChange);
-    el.addEventListener("input", onChange);
-    el.addEventListener("keypress", onChange);
-  }, (x) => {
-    const _1=set_1(x);
-    return(_2) => _2==null?null:_1(_2.$0);
-  }, Map((v) => {
-    let _1;
-    return expectedValue!=null&&expectedValue.$==1&&(Equals(expectedValue.$0, v)&&(_1=expectedValue.$0,true))?null:Some(v);
-  }, var_1.View)];
-}
-function StringSet(){
-  return _c_5.StringSet;
-}
-function StringGet(){
-  return _c_5.StringGet;
-}
-function StringListSet(){
-  return _c_5.StringListSet;
-}
-function StringListGet(){
-  return _c_5.StringListGet;
-}
-function DateTimeSetUnchecked(){
-  return _c_5.DateTimeSetUnchecked;
-}
-function DateTimeGetUnchecked(){
-  return _c_5.DateTimeGetUnchecked;
-}
-function FileApplyValue(get_1, set_1, var_1){
-  let expectedValue;
-  expectedValue=null;
-  return[(el) => {
-    el.addEventListener("change", () => {
-      var_1.UpdateMaybe((v) => {
-        let _1;
-        expectedValue=get_1(el);
-        return expectedValue!=null&&expectedValue.$==1&&(expectedValue.$0!==v&&(_1=[expectedValue, expectedValue.$0],true))?_1[0]:null;
-      });
-    });
-  }, (x) => {
-    const _1=set_1(x);
-    return(_2) => _2==null?null:_1(_2.$0);
-  }, Map((v) => {
-    let _1;
-    return expectedValue!=null&&expectedValue.$==1&&(Equals(expectedValue.$0, v)&&(_1=expectedValue.$0,true))?null:Some(v);
-  }, var_1.View)];
-}
-function FileSetUnchecked(){
-  return _c_5.FileSetUnchecked;
-}
-function FileGetUnchecked(){
-  return _c_5.FileGetUnchecked;
-}
-function IntSetUnchecked(){
-  return _c_5.IntSetUnchecked;
-}
-function IntGetUnchecked(){
-  return _c_5.IntGetUnchecked;
-}
-function IntSetChecked(){
-  return _c_5.IntSetChecked;
-}
-function IntGetChecked(){
-  return _c_5.IntGetChecked;
-}
-function FloatSetUnchecked(){
-  return _c_5.FloatSetUnchecked;
-}
-function FloatGetUnchecked(){
-  return _c_5.FloatGetUnchecked;
-}
-function FloatSetChecked(){
-  return _c_5.FloatSetChecked;
-}
-function FloatGetChecked(){
-  return _c_5.FloatGetChecked;
-}
-function isBlank(s){
-  return forall_2(IsWhiteSpace, s);
-}
-class CheckedInput {
-  get Input(){
-    return this.$==1?this.$0:this.$==2?this.$0:this.$1;
-  }
-  static Blank(inputText){
-    return Create_1(CheckedInput, {$:2, $0:inputText});
-  }
-  static Invalid(inputText){
-    return Create_1(CheckedInput, {$:1, $0:inputText});
-  }
-  static Valid(value, inputText){
-    return Create_1(CheckedInput, {
-      $:0, 
-      $0:value, 
-      $1:inputText
-    });
-  }
-  $;
-  $0;
-  $1;
 }
 class KeyNotFoundException extends Error {
   constructor(i, _1){
@@ -2966,19 +3147,6 @@ function Intersect_1(a, b){
   set_1.IntersectWith(ToArray_2(b));
   return set_1;
 }
-function IsWhiteSpace(c){
-  return c.match(new RegExp("\\s"))!==null;
-}
-function TryParse_1(s){
-  const d=Date.parse(s);
-  return isNaN(d)?null:Some(d);
-}
-function TryParse_2(s, min, max_1, r){
-  const x=+s;
-  const ok=x===x-x%1&&x>=min&&x<=max_1;
-  if(ok)r.set(x);
-  return ok;
-}
 class CancellationTokenSource extends Object_1 {
   init;
   c;
@@ -3009,16 +3177,16 @@ function Children(elem, delims){
   else {
     let _1=elem.childNodes.length;
     const o=elem.childNodes;
-    let _2=init(_1, (i) => o[i]);
+    let _2=init_1(_1, (i) => o[i]);
     return DomNodes(_2);
   }
 }
 function Except_2(a, a_1){
   const excluded=a.$0;
-  return DomNodes(filter_1((n) => forall((k) =>!(n===k), excluded), a_1.$0));
+  return DomNodes(filter_1((n) => forall_2((k) =>!(n===k), excluded), a_1.$0));
 }
 function Iter(f, a){
-  iter(f, a.$0);
+  iter_1(f, a.$0);
 }
 function DocChildren(node){
   const q=[];
@@ -3036,7 +3204,7 @@ function DocChildren(node){
         else if(doc!=null&&doc.$==6){
           const x=doc.$0.Els;
           return(((a_1) =>(a_2) => {
-            iter(a_1, a_2);
+            iter_1(a_1, a_2);
           })((a_1) => {
             if(a_1==null||a_1.constructor===Object)loop(a_1);
             else q.push(a_1);
