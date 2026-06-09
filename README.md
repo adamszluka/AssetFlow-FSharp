@@ -51,9 +51,7 @@ dotnet run
 http://localhost:5000
 
 ## Screenshot
-
 -To be added.
 
-##Live Demo
-
+## Live Demo
 -To be added.
