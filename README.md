@@ -32,6 +32,8 @@ This project was developed as a separate Project Omega assignment.
 - .NET 10
 - WebSharper
 - ASP.NET Core
+- Docker
+- Render
 
 ## Functional programming aspects
 
@@ -76,4 +78,4 @@ http://localhost:5000
 ![AssetFlow filters](Screenshot2.png)
 
 ## Live Demo
--To be added.
+https://assetflow-app-r7rw.onrender.com
