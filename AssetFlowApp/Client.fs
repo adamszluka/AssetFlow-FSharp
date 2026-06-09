@@ -187,6 +187,21 @@ let Main () =
                 selectedStatusVar.Value <- Active
                 validationMessageVar.Value <- ""
 
+    let updateAssetStatus assetId newStatus =
+        assetsVar.Value <-
+            assetsVar.Value
+            |> List.map (fun asset ->
+                if asset.Id = assetId then
+                    { asset with Status = newStatus }
+                else
+                    asset
+            )
+
+    let deleteAsset assetId =
+        assetsVar.Value <-
+            assetsVar.Value
+            |> List.filter (fun asset -> asset.Id <> assetId)
+
     let typeButton label value =
         selectedTypeVar.View
         |> Doc.BindView (fun selectedType ->
@@ -219,6 +234,7 @@ let Main () =
         assetsVar.View
         |> View.Map (fun assets ->
             let total = List.length assets
+
             let active =
                 assets
                 |> List.filter (fun a -> a.Status = Active)
@@ -309,6 +325,45 @@ let Main () =
                         attr.style ("display: inline-block; padding: 5px 10px; border-radius: 999px; color: white; font-size: 12px; font-weight: bold; background: " + replacementColor asset + ";")
                     ] [
                         text (replacementText asset)
+                    ]
+                ]
+
+                div [
+                    attr.style "display: flex; flex-direction: column; gap: 8px; min-width: 140px;"
+                ] [
+                    button [
+                        on.click (fun _ _ -> updateAssetStatus asset.Id Active)
+                        attr.style "padding: 8px 10px; border-radius: 8px; border: none; background: #2e7d32; color: white; cursor: pointer;"
+                    ] [
+                        text "Set Active"
+                    ]
+
+                    button [
+                        on.click (fun _ _ -> updateAssetStatus asset.Id InRepair)
+                        attr.style "padding: 8px 10px; border-radius: 8px; border: none; background: #f9a825; color: white; cursor: pointer;"
+                    ] [
+                        text "Set In Repair"
+                    ]
+
+                    button [
+                        on.click (fun _ _ -> updateAssetStatus asset.Id Retired)
+                        attr.style "padding: 8px 10px; border-radius: 8px; border: none; background: #616161; color: white; cursor: pointer;"
+                    ] [
+                        text "Retire"
+                    ]
+
+                    button [
+                        on.click (fun _ _ -> updateAssetStatus asset.Id Missing)
+                        attr.style "padding: 8px 10px; border-radius: 8px; border: none; background: #c62828; color: white; cursor: pointer;"
+                    ] [
+                        text "Mark Missing"
+                    ]
+
+                    button [
+                        on.click (fun _ _ -> deleteAsset asset.Id)
+                        attr.style "padding: 8px 10px; border-radius: 8px; border: none; background: #b71c1c; color: white; font-weight: bold; cursor: pointer;"
+                    ] [
+                        text "Delete"
                     ]
                 ]
             ]
