@@ -12,6 +12,7 @@ function Main(){
   const selectedStatusVar=_c.Create_1(Active);
   const statusFilterVar=_c.Create_1(AllStatuses);
   const typeFilterVar=_c.Create_1(AllTypes);
+  const searchVar=_c.Create_1("");
   const validationMessageVar=_c.Create_1("");
   const nextIdVar=_c.Create_1(5);
   const assetsVar=_c.Create_1(ofArray([New(1, "DELL Latitude 5420", "Adam Szluka", Laptop, Active, 2021), New(2, "VM-WEB-01", "Infrastructure Team", VirtualMachine, Active, 2023), New(3, "Juniper EX2300", "Network Team", NetworkDevice, InRepair, 2019), New(4, "HP ProDesk 600", "Finance Department", Desktop, Retired, 2018)]));
@@ -32,10 +33,12 @@ function Main(){
     const assetId=asset.Id;
     return assetsVar.Set(filter((asset_1) => asset_1.Id!==assetId, assetsVar.Get()));
   }), Attr.Create("style", "padding: 8px 10px; border-radius: 8px; border: none; background: #b71c1c; color: white; font-weight: bold; cursor: pointer;")], [Doc.TextNode("Delete")])])])]);
+  const combinedFilterView=Map2((_2, _3) =>[_2, _3], Map2((_2, _3) =>[_2, _3], statusFilterVar.View, typeFilterVar.View), searchVar.View);
   const assetList=Doc.BindView((_2) => {
-    const filteredAssets=applyFilters(_2[1], _2[2], _2[0]);
+    const a=_2[1];
+    const filteredAssets=applyFilters(a[0], a[1], _2[2], _2[0]);
     return filteredAssets.$==0?Doc.Element("div", [Attr.Create("style", "padding: 18px; border-radius: 12px; background: #fafafa; color: #666;")], [Doc.TextNode("No assets match the selected filters.")]):Doc.Concat(map(assetCard, filteredAssets));
-  }, Map3((_2, _3, _4) =>[_2, _3, _4], assetsVar.View, statusFilterVar.View, typeFilterVar.View));
+  }, Map2((_2, _3) =>[_2, _3[0], _3[1]], assetsVar.View, combinedFilterView));
   const _1=Doc.Element("div", [Attr.Create("style", "max-width: 1000px; margin: 40px auto; padding: 24px; font-family: Arial, sans-serif; background: #fcfcfc;")], [Doc.Element("div", [Attr.Create("style", "background: linear-gradient(135deg, #37474f, #78909c); color: white; padding: 28px; border-radius: 16px; margin-bottom: 24px;")], [Doc.Element("h1", [Attr.Create("style", "margin: 0 0 8px 0; font-size: 34px;")], [Doc.TextNode("AssetFlow")]), Doc.Element("p", [Attr.Create("style", "margin: 0; font-size: 16px;")], [Doc.TextNode("IT asset management web application built with F# and WebSharper.")])]), statsPanel, Doc.Element("div", [Attr.Create("style", "background: white; padding: 22px; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 24px;")], [Doc.Element("h2", [Attr.Create("style", "margin-top: 0;")], [Doc.TextNode("Add new asset")]), Doc.Element("div", [Attr.Create("style", "margin-bottom: 10px;")], [Doc.Input([Attr.Create("placeholder", "Asset name"), Attr.Create("style", "width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cccccc; box-sizing: border-box;")], nameVar)]), Doc.Element("div", [Attr.Create("style", "margin-bottom: 10px;")], [Doc.Input([Attr.Create("placeholder", "Owner"), Attr.Create("style", "width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cccccc; box-sizing: border-box;")], ownerVar)]), Doc.Element("div", [Attr.Create("style", "margin-bottom: 14px;")], [Doc.Input([Attr.Create("placeholder", "Purchase year"), Attr.Create("style", "width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cccccc; box-sizing: border-box;")], purchaseYearVar)]), Doc.Element("div", [Attr.Create("style", "margin-bottom: 12px;")], [Doc.Element("div", [Attr.Create("style", "font-weight: bold; margin-bottom: 6px;")], [Doc.TextNode("Asset type")]), typeButton("Laptop", Laptop), typeButton("Desktop", Desktop), typeButton("Server", Server), typeButton("VM", VirtualMachine), typeButton("Network", NetworkDevice), typeButton("Other", Other)]), Doc.Element("div", [Attr.Create("style", "margin-bottom: 14px;")], [Doc.Element("div", [Attr.Create("style", "font-weight: bold; margin-bottom: 6px;")], [Doc.TextNode("Asset status")]), statusButton("Active", Active), statusButton("In Repair", InRepair), statusButton("Retired", Retired), statusButton("Missing", Missing)]), Doc.Element("button", [Attr.HandlerImpl("click", () =>() => {
     const name=Trim(nameVar.Get());
     const owner=Trim(ownerVar.Get());
@@ -64,7 +67,7 @@ function Main(){
       }
       else return validationMessageVar.Set("Purchase year must be a valid number.");
     }
-  }), Attr.Create("style", "padding: 10px 16px; border-radius: 8px; border: none; background: #37474f; color: white; font-weight: bold; cursor: pointer;")], [Doc.TextNode("Add asset")]), validationMessage]), Doc.Element("div", [Attr.Create("style", "background: white; padding: 22px; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 24px;")], [Doc.Element("h2", [Attr.Create("style", "margin-top: 0;")], [Doc.TextNode("Filters")]), Doc.Element("div", [Attr.Create("style", "margin-bottom: 16px;")], [Doc.Element("div", [Attr.Create("style", "font-weight: bold; margin-bottom: 8px;")], [Doc.TextNode("Status filter")]), statusFilterButton("All", AllStatuses), statusFilterButton("Active", OnlyActive), statusFilterButton("In Repair", OnlyInRepair), statusFilterButton("Retired", OnlyRetired), statusFilterButton("Missing", OnlyMissing)]), Doc.Element("div", [], [Doc.Element("div", [Attr.Create("style", "font-weight: bold; margin-bottom: 8px;")], [Doc.TextNode("Type filter")]), typeFilterButton("All Types", AllTypes), typeFilterButton("Laptop", OnlyLaptops), typeFilterButton("Desktop", OnlyDesktops), typeFilterButton("Server", OnlyServers), typeFilterButton("VM", OnlyVirtualMachines), typeFilterButton("Network", OnlyNetworkDevices), typeFilterButton("Other", OnlyOther)])]), Doc.Element("h2", [], [Doc.TextNode("Assets")]), Doc.Element("div", [], [assetList])]);
+  }), Attr.Create("style", "padding: 10px 16px; border-radius: 8px; border: none; background: #37474f; color: white; font-weight: bold; cursor: pointer;")], [Doc.TextNode("Add asset")]), validationMessage]), Doc.Element("div", [Attr.Create("style", "background: white; padding: 22px; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 24px;")], [Doc.Element("h2", [Attr.Create("style", "margin-top: 0;")], [Doc.TextNode("Filters")]), Doc.Element("div", [Attr.Create("style", "margin-bottom: 16px;")], [Doc.Element("div", [Attr.Create("style", "font-weight: bold; margin-bottom: 8px;")], [Doc.TextNode("Search")]), Doc.Input([Attr.Create("placeholder", "Search by asset name or owner"), Attr.Create("style", "width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cccccc; box-sizing: border-box;")], searchVar)]), Doc.Element("div", [Attr.Create("style", "margin-bottom: 16px;")], [Doc.Element("div", [Attr.Create("style", "font-weight: bold; margin-bottom: 8px;")], [Doc.TextNode("Status filter")]), statusFilterButton("All", AllStatuses), statusFilterButton("Active", OnlyActive), statusFilterButton("In Repair", OnlyInRepair), statusFilterButton("Retired", OnlyRetired), statusFilterButton("Missing", OnlyMissing)]), Doc.Element("div", [], [Doc.Element("div", [Attr.Create("style", "font-weight: bold; margin-bottom: 8px;")], [Doc.TextNode("Type filter")]), typeFilterButton("All Types", AllTypes), typeFilterButton("Laptop", OnlyLaptops), typeFilterButton("Desktop", OnlyDesktops), typeFilterButton("Server", OnlyServers), typeFilterButton("VM", OnlyVirtualMachines), typeFilterButton("Network", OnlyNetworkDevices), typeFilterButton("Other", OnlyOther)])]), Doc.Element("h2", [], [Doc.TextNode("Assets")]), Doc.Element("div", [], [assetList])]);
   LoadLocalTemplates("");
   Doc.RunById("main", _1);
 }
@@ -74,8 +77,8 @@ function assetTypeColor(assetType){
 function assetStatusColor(status){
   return status.$==1?"#f9a825":status.$==2?"#616161":status.$==3?"#c62828":"#2e7d32";
 }
-function applyFilters(statusFilter, typeFilter, assets){
-  return filterByType(typeFilter, filterByStatus(statusFilter, assets));
+function applyFilters(statusFilter, typeFilter, searchText, assets){
+  return filterBySearch(searchText, filterByType(typeFilter, filterByStatus(statusFilter, assets)));
 }
 function assetAge(asset){
   return currentYear()-asset.PurchaseYear;
@@ -110,6 +113,10 @@ function filterByStatus(statusFilter, assets){
 }
 function filterByType(typeFilter, assets){
   return typeFilter.$==1?filter((asset) => asset.AssetType.$===0, assets):typeFilter.$==2?filter((asset) => asset.AssetType.$===1, assets):typeFilter.$==3?filter((asset) => asset.AssetType.$===2, assets):typeFilter.$==4?filter((asset) => asset.AssetType.$===3, assets):typeFilter.$==5?filter((asset) => asset.AssetType.$===4, assets):typeFilter.$==6?filter((asset) => asset.AssetType.$===5, assets):assets;
+}
+function filterBySearch(searchText, assets){
+  const search=Trim(searchText).toLowerCase();
+  return search==""?assets:filter((asset) => asset.Name.toLowerCase().indexOf(search)!=-1||asset.Owner.toLowerCase().indexOf(search)!=-1, assets);
 }
 function currentYear(){
   return _c_1.currentYear;
@@ -420,8 +427,8 @@ function compareArrays(a, b){
 function compareDates(a, b){
   return Compare(a.getTime(), b.getTime());
 }
-function Map3(fn, a, a_1, a_2){
-  return CreateLazy(() => Map3_1(fn, a(), a_1(), a_2()));
+function Map2(fn, a, a_1){
+  return CreateLazy(() => Map2_1(fn, a(), a_1()));
 }
 function Map(fn, a){
   return CreateLazy(() => Map_1(fn, a()));
@@ -560,28 +567,24 @@ class ConcreteVar extends Var {
     this.id=Int();
   }
 }
-function Map3_1(fn, sn1, sn2, sn3){
+function Map2_1(fn, sn1, sn2){
   const _1=sn1.s;
   const _2=sn2.s;
-  const _3=sn3.s;
-  if(_1!=null&&_1.$==0)return _2!=null&&_2.$==0?_3!=null&&_3.$==0?{s:Forever(fn(_1.$0, _2.$0, _3.$0))}:Map3Opt1(fn, _1.$0, _2.$0, sn3):_3!=null&&_3.$==0?Map3Opt2(fn, _1.$0, _3.$0, sn2):Map3Opt3(fn, _1.$0, sn2, sn3);
-  else if(_2!=null&&_2.$==0)return _3!=null&&_3.$==0?Map3Opt4(fn, _2.$0, _3.$0, sn1):Map3Opt5(fn, _2.$0, sn1, sn3);
-  else if(_3!=null&&_3.$==0)return Map3Opt6(fn, _3.$0, sn1, sn2);
+  if(_1!=null&&_1.$==0)return _2!=null&&_2.$==0?{s:Forever(fn(_1.$0, _2.$0))}:Map2Opt1(fn, _1.$0, sn2);
+  else if(_2!=null&&_2.$==0)return Map2Opt2(fn, _2.$0, sn1);
   else {
     const res={s:Waiting([], [])};
     const cont=() => {
       const m=res.s;
       if(!(m!=null&&m.$==0||m!=null&&m.$==2)){
-        const _4=ValueAndForever(sn1);
-        const _5=ValueAndForever(sn2);
-        const _6=ValueAndForever(sn3);
-        if(_4!=null&&_4.$==1)if(_5!=null&&_5.$==1)if(_6!=null&&_6.$==1)if(_4.$0[1]&&_5.$0[1]&&_6.$0[1])MarkForever(res, fn(_4.$0[0], _5.$0[0], _6.$0[0]));
-        else MarkReady(res, fn(_4.$0[0], _5.$0[0], _6.$0[0]));
+        const _3=ValueAndForever(sn1);
+        const _4=ValueAndForever(sn2);
+        if(_3!=null&&_3.$==1)if(_4!=null&&_4.$==1)if(_3.$0[1]&&_4.$0[1])MarkForever(res, fn(_3.$0[0], _4.$0[0]));
+        else MarkReady(res, fn(_3.$0[0], _4.$0[0]));
       }
     };
     When(sn1, cont, res);
     When(sn2, cont, res);
-    When(sn3, cont, res);
     return res;
   }
 }
@@ -601,23 +604,11 @@ function WhenObsoleteRun(snap, obs){
   if(m==null)obs();
   else m!=null&&m.$==2?(m.$0,m.$1.push(obs)):m!=null&&m.$==3?(m.$0,m.$1.push(obs)):m.$0;
 }
-function Map3Opt1(fn, x, y, sn3){
-  return Map_1((z) => fn(x, y, z), sn3);
+function Map2Opt1(fn, x, sn2){
+  return Map_1((y) => fn(x, y), sn2);
 }
-function Map3Opt2(fn, x, z, sn2){
-  return Map_1((y) => fn(x, y, z), sn2);
-}
-function Map3Opt3(fn, x, sn2, sn3){
-  return Map2((_1, _2) => fn(x, _1, _2), sn2, sn3);
-}
-function Map3Opt4(fn, y, z, sn1){
-  return Map_1((x) => fn(x, y, z), sn1);
-}
-function Map3Opt5(fn, y, sn1, sn3){
-  return Map2((_1, _2) => fn(_1, y, _2), sn1, sn3);
-}
-function Map3Opt6(fn, z, sn1, sn2){
-  return Map2((_1, _2) => fn(_1, _2, z), sn1, sn2);
+function Map2Opt2(fn, y, sn1){
+  return Map_1((x) => fn(x, y), sn1);
 }
 function ValueAndForever(snap){
   const m=snap.s;
@@ -662,27 +653,6 @@ function MarkDone(res, sn, v){
   if(_1!=null&&_1.$==0)MarkForever(res, v);
   else MarkReady(res, v);
 }
-function Map2(fn, sn1, sn2){
-  const _1=sn1.s;
-  const _2=sn2.s;
-  if(_1!=null&&_1.$==0)return _2!=null&&_2.$==0?{s:Forever(fn(_1.$0, _2.$0))}:Map2Opt1(fn, _1.$0, sn2);
-  else if(_2!=null&&_2.$==0)return Map2Opt2(fn, _2.$0, sn1);
-  else {
-    const res={s:Waiting([], [])};
-    const cont=() => {
-      const m=res.s;
-      if(!(m!=null&&m.$==0||m!=null&&m.$==2)){
-        const _3=ValueAndForever(sn1);
-        const _4=ValueAndForever(sn2);
-        if(_3!=null&&_3.$==1)if(_4!=null&&_4.$==1)if(_3.$0[1]&&_4.$0[1])MarkForever(res, fn(_3.$0[0], _4.$0[0]));
-        else MarkReady(res, fn(_3.$0[0], _4.$0[0]));
-      }
-    };
-    When(sn1, cont, res);
-    When(sn2, cont, res);
-    return res;
-  }
-}
 function EnqueueSafe(q, x){
   q.push(x);
   if(q.length%20===0){
@@ -720,12 +690,6 @@ function Map2Unit_1(sn1, sn2){
     When(sn2, cont, res);
     return res;
   }
-}
-function Map2Opt1(fn, x, sn2){
-  return Map_1((y) => fn(x, y), sn2);
-}
-function Map2Opt2(fn, y, sn1){
-  return Map_1((x) => fn(x, y), sn1);
 }
 function Join_1(snap){
   const res={s:Waiting([], [])};

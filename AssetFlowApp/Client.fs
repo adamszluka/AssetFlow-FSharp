@@ -142,10 +142,24 @@ let filterByType typeFilter assets =
     | OnlyOther -> assets |> List.filter (fun asset -> asset.AssetType = Other)
 
 [<JavaScript>]
-let applyFilters statusFilter typeFilter assets =
+let filterBySearch (searchText: string) assets =
+    let search = searchText.Trim().ToLower()
+
+    if search = "" then
+        assets
+    else
+        assets
+        |> List.filter (fun asset ->
+            asset.Name.ToLower().Contains(search)
+            || asset.Owner.ToLower().Contains(search)
+        )
+
+[<JavaScript>]
+let applyFilters statusFilter typeFilter searchText assets =
     assets
     |> filterByStatus statusFilter
     |> filterByType typeFilter
+    |> filterBySearch searchText
 
 [<JavaScript; SPAEntryPoint>]
 let Main () =
@@ -155,10 +169,12 @@ let Main () =
     let purchaseYearVar = Var.Create ""
     let selectedTypeVar = Var.Create Laptop
     let selectedStatusVar = Var.Create Active
+
     let statusFilterVar = Var.Create AllStatuses
     let typeFilterVar = Var.Create AllTypes
-    let validationMessageVar = Var.Create ""
+    let searchVar = Var.Create ""
 
+    let validationMessageVar = Var.Create ""
     let nextIdVar = Var.Create 5
 
     let assetsVar =
@@ -434,11 +450,26 @@ let Main () =
         ]
 
     let assetList =
-        View.Map3 (fun assets statusFilter typeFilter -> assets, statusFilter, typeFilter) assetsVar.View statusFilterVar.View typeFilterVar.View
-        |> Doc.BindView (fun (assets, statusFilter, typeFilter) ->
+        let filtersView =
+            View.Map2
+                (fun statusFilter typeFilter -> statusFilter, typeFilter)
+                statusFilterVar.View
+                typeFilterVar.View
+
+        let combinedFilterView =
+            View.Map2
+                (fun filters searchText -> filters, searchText)
+                filtersView
+                searchVar.View
+
+        View.Map2
+            (fun assets (filters, searchText) -> assets, filters, searchText)
+            assetsVar.View
+            combinedFilterView
+        |> Doc.BindView (fun (assets, (statusFilter, typeFilter), searchText) ->
             let filteredAssets =
                 assets
-                |> applyFilters statusFilter typeFilter
+                |> applyFilters statusFilter typeFilter searchText
 
             if List.isEmpty filteredAssets then
                 div [
@@ -524,6 +555,17 @@ let Main () =
             attr.style "background: white; padding: 22px; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 24px;"
         ] [
             h2 [ attr.style "margin-top: 0;" ] [ text "Filters" ]
+
+            div [ attr.style "margin-bottom: 16px;" ] [
+                div [ attr.style "font-weight: bold; margin-bottom: 8px;" ] [
+                    text "Search"
+                ]
+
+                Doc.InputType.Text [
+                    attr.placeholder "Search by asset name or owner"
+                    attr.style "width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cccccc; box-sizing: border-box;"
+                ] searchVar
+            ]
 
             div [ attr.style "margin-bottom: 16px;" ] [
                 div [ attr.style "font-weight: bold; margin-bottom: 8px;" ] [ text "Status filter" ]
