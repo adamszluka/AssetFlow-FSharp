@@ -22,6 +22,24 @@ type AssetStatus =
     | Missing
 
 [<JavaScript>]
+type StatusFilter =
+    | AllStatuses
+    | OnlyActive
+    | OnlyInRepair
+    | OnlyRetired
+    | OnlyMissing
+
+[<JavaScript>]
+type TypeFilter =
+    | AllTypes
+    | OnlyLaptops
+    | OnlyDesktops
+    | OnlyServers
+    | OnlyVirtualMachines
+    | OnlyNetworkDevices
+    | OnlyOther
+
+[<JavaScript>]
 type Asset =
     {
         Id: int
@@ -103,6 +121,32 @@ let parseYear (value: string) =
 let isValidYear year =
     year >= 2000 && year <= currentYear
 
+[<JavaScript>]
+let filterByStatus statusFilter assets =
+    match statusFilter with
+    | AllStatuses -> assets
+    | OnlyActive -> assets |> List.filter (fun asset -> asset.Status = Active)
+    | OnlyInRepair -> assets |> List.filter (fun asset -> asset.Status = InRepair)
+    | OnlyRetired -> assets |> List.filter (fun asset -> asset.Status = Retired)
+    | OnlyMissing -> assets |> List.filter (fun asset -> asset.Status = Missing)
+
+[<JavaScript>]
+let filterByType typeFilter assets =
+    match typeFilter with
+    | AllTypes -> assets
+    | OnlyLaptops -> assets |> List.filter (fun asset -> asset.AssetType = Laptop)
+    | OnlyDesktops -> assets |> List.filter (fun asset -> asset.AssetType = Desktop)
+    | OnlyServers -> assets |> List.filter (fun asset -> asset.AssetType = Server)
+    | OnlyVirtualMachines -> assets |> List.filter (fun asset -> asset.AssetType = VirtualMachine)
+    | OnlyNetworkDevices -> assets |> List.filter (fun asset -> asset.AssetType = NetworkDevice)
+    | OnlyOther -> assets |> List.filter (fun asset -> asset.AssetType = Other)
+
+[<JavaScript>]
+let applyFilters statusFilter typeFilter assets =
+    assets
+    |> filterByStatus statusFilter
+    |> filterByType typeFilter
+
 [<JavaScript; SPAEntryPoint>]
 let Main () =
 
@@ -111,6 +155,8 @@ let Main () =
     let purchaseYearVar = Var.Create ""
     let selectedTypeVar = Var.Create Laptop
     let selectedStatusVar = Var.Create Active
+    let statusFilterVar = Var.Create AllStatuses
+    let typeFilterVar = Var.Create AllTypes
     let validationMessageVar = Var.Create ""
 
     let nextIdVar = Var.Create 5
@@ -230,6 +276,34 @@ let Main () =
             ] [ text label ]
         )
 
+    let statusFilterButton label value =
+        statusFilterVar.View
+        |> Doc.BindView (fun currentFilter ->
+            button [
+                on.click (fun _ _ -> statusFilterVar.Value <- value)
+                attr.style (
+                    if currentFilter = value then
+                        "margin-right: 8px; margin-bottom: 8px; padding: 8px 12px; border-radius: 8px; border: none; background: #37474f; color: white; font-weight: bold; cursor: pointer;"
+                    else
+                        "margin-right: 8px; margin-bottom: 8px; padding: 8px 12px; border-radius: 8px; border: 1px solid #cccccc; background: white; cursor: pointer;"
+                )
+            ] [ text label ]
+        )
+
+    let typeFilterButton label value =
+        typeFilterVar.View
+        |> Doc.BindView (fun currentFilter ->
+            button [
+                on.click (fun _ _ -> typeFilterVar.Value <- value)
+                attr.style (
+                    if currentFilter = value then
+                        "margin-right: 8px; margin-bottom: 8px; padding: 8px 12px; border-radius: 8px; border: none; background: #00695c; color: white; font-weight: bold; cursor: pointer;"
+                    else
+                        "margin-right: 8px; margin-bottom: 8px; padding: 8px 12px; border-radius: 8px; border: 1px solid #cccccc; background: white; cursor: pointer;"
+                )
+            ] [ text label ]
+        )
+
     let statsPanel =
         assetsVar.View
         |> View.Map (fun assets ->
@@ -334,47 +408,48 @@ let Main () =
                     button [
                         on.click (fun _ _ -> updateAssetStatus asset.Id Active)
                         attr.style "padding: 8px 10px; border-radius: 8px; border: none; background: #2e7d32; color: white; cursor: pointer;"
-                    ] [
-                        text "Set Active"
-                    ]
+                    ] [ text "Set Active" ]
 
                     button [
                         on.click (fun _ _ -> updateAssetStatus asset.Id InRepair)
                         attr.style "padding: 8px 10px; border-radius: 8px; border: none; background: #f9a825; color: white; cursor: pointer;"
-                    ] [
-                        text "Set In Repair"
-                    ]
+                    ] [ text "Set In Repair" ]
 
                     button [
                         on.click (fun _ _ -> updateAssetStatus asset.Id Retired)
                         attr.style "padding: 8px 10px; border-radius: 8px; border: none; background: #616161; color: white; cursor: pointer;"
-                    ] [
-                        text "Retire"
-                    ]
+                    ] [ text "Retire" ]
 
                     button [
                         on.click (fun _ _ -> updateAssetStatus asset.Id Missing)
                         attr.style "padding: 8px 10px; border-radius: 8px; border: none; background: #c62828; color: white; cursor: pointer;"
-                    ] [
-                        text "Mark Missing"
-                    ]
+                    ] [ text "Mark Missing" ]
 
                     button [
                         on.click (fun _ _ -> deleteAsset asset.Id)
                         attr.style "padding: 8px 10px; border-radius: 8px; border: none; background: #b71c1c; color: white; font-weight: bold; cursor: pointer;"
-                    ] [
-                        text "Delete"
-                    ]
+                    ] [ text "Delete" ]
                 ]
             ]
         ]
 
     let assetList =
-        assetsVar.View
-        |> Doc.BindView (fun assets ->
-            assets
-            |> List.map assetCard
-            |> Doc.Concat
+        View.Map3 (fun assets statusFilter typeFilter -> assets, statusFilter, typeFilter) assetsVar.View statusFilterVar.View typeFilterVar.View
+        |> Doc.BindView (fun (assets, statusFilter, typeFilter) ->
+            let filteredAssets =
+                assets
+                |> applyFilters statusFilter typeFilter
+
+            if List.isEmpty filteredAssets then
+                div [
+                    attr.style "padding: 18px; border-radius: 12px; background: #fafafa; color: #666;"
+                ] [
+                    text "No assets match the selected filters."
+                ]
+            else
+                filteredAssets
+                |> List.map assetCard
+                |> Doc.Concat
         )
 
     div [
@@ -383,10 +458,7 @@ let Main () =
         div [
             attr.style "background: linear-gradient(135deg, #37474f, #78909c); color: white; padding: 28px; border-radius: 16px; margin-bottom: 24px;"
         ] [
-            h1 [ attr.style "margin: 0 0 8px 0; font-size: 34px;" ] [
-                text "AssetFlow"
-            ]
-
+            h1 [ attr.style "margin: 0 0 8px 0; font-size: 34px;" ] [ text "AssetFlow" ]
             p [ attr.style "margin: 0; font-size: 16px;" ] [
                 text "IT asset management web application built with F# and WebSharper."
             ]
@@ -397,9 +469,7 @@ let Main () =
         div [
             attr.style "background: white; padding: 22px; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 24px;"
         ] [
-            h2 [ attr.style "margin-top: 0;" ] [
-                text "Add new asset"
-            ]
+            h2 [ attr.style "margin-top: 0;" ] [ text "Add new asset" ]
 
             div [ attr.style "margin-bottom: 10px;" ] [
                 Doc.InputType.Text [
@@ -423,9 +493,7 @@ let Main () =
             ]
 
             div [ attr.style "margin-bottom: 12px;" ] [
-                div [ attr.style "font-weight: bold; margin-bottom: 6px;" ] [
-                    text "Asset type"
-                ]
+                div [ attr.style "font-weight: bold; margin-bottom: 6px;" ] [ text "Asset type" ]
 
                 typeButton "Laptop" Laptop
                 typeButton "Desktop" Desktop
@@ -436,9 +504,7 @@ let Main () =
             ]
 
             div [ attr.style "margin-bottom: 14px;" ] [
-                div [ attr.style "font-weight: bold; margin-bottom: 6px;" ] [
-                    text "Asset status"
-                ]
+                div [ attr.style "font-weight: bold; margin-bottom: 6px;" ] [ text "Asset status" ]
 
                 statusButton "Active" Active
                 statusButton "In Repair" InRepair
@@ -449,9 +515,7 @@ let Main () =
             button [
                 on.click (fun _ _ -> addAsset ())
                 attr.style "padding: 10px 16px; border-radius: 8px; border: none; background: #37474f; color: white; font-weight: bold; cursor: pointer;"
-            ] [
-                text "Add asset"
-            ]
+            ] [ text "Add asset" ]
 
             validationMessage
         ]
@@ -459,18 +523,32 @@ let Main () =
         div [
             attr.style "background: white; padding: 22px; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 24px;"
         ] [
-            h2 [ attr.style "margin-top: 0;" ] [
-                text "IT Asset Inventory"
+            h2 [ attr.style "margin-top: 0;" ] [ text "Filters" ]
+
+            div [ attr.style "margin-bottom: 16px;" ] [
+                div [ attr.style "font-weight: bold; margin-bottom: 8px;" ] [ text "Status filter" ]
+
+                statusFilterButton "All" AllStatuses
+                statusFilterButton "Active" OnlyActive
+                statusFilterButton "In Repair" OnlyInRepair
+                statusFilterButton "Retired" OnlyRetired
+                statusFilterButton "Missing" OnlyMissing
             ]
 
-            p [ attr.style "color: #555;" ] [
-                text "This dashboard shows IT assets, owners, statuses, purchase years, asset age, and replacement status."
+            div [] [
+                div [ attr.style "font-weight: bold; margin-bottom: 8px;" ] [ text "Type filter" ]
+
+                typeFilterButton "All Types" AllTypes
+                typeFilterButton "Laptop" OnlyLaptops
+                typeFilterButton "Desktop" OnlyDesktops
+                typeFilterButton "Server" OnlyServers
+                typeFilterButton "VM" OnlyVirtualMachines
+                typeFilterButton "Network" OnlyNetworkDevices
+                typeFilterButton "Other" OnlyOther
             ]
         ]
 
-        h2 [] [
-            text "Assets"
-        ]
+        h2 [] [ text "Assets" ]
 
         div [] [
             assetList
