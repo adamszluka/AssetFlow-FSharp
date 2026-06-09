@@ -161,6 +161,17 @@ let applyFilters statusFilter typeFilter searchText assets =
     |> filterByType typeFilter
     |> filterBySearch searchText
 
+[<JavaScript>]
+let countByStatus status assets =
+    assets
+    |> List.filter (fun asset -> asset.Status = status)
+    |> List.length
+
+[<JavaScript>]
+let replacementDueAssets assets =
+    assets
+    |> List.filter isReplacementDue
+
 [<JavaScript; SPAEntryPoint>]
 let Main () =
 
@@ -324,27 +335,17 @@ let Main () =
         assetsVar.View
         |> View.Map (fun assets ->
             let total = List.length assets
-
-            let active =
-                assets
-                |> List.filter (fun a -> a.Status = Active)
-                |> List.length
-
-            let inRepair =
-                assets
-                |> List.filter (fun a -> a.Status = InRepair)
-                |> List.length
-
-            let replacementDue =
-                assets
-                |> List.filter isReplacementDue
-                |> List.length
+            let active = countByStatus Active assets
+            let inRepair = countByStatus InRepair assets
+            let retired = countByStatus Retired assets
+            let missing = countByStatus Missing assets
+            let due = assets |> replacementDueAssets |> List.length
 
             div [
-                attr.style "display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px;"
+                attr.style "display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin-bottom: 24px;"
             ] [
                 div [ attr.style "padding: 16px; background: #f5f5f5; border-radius: 12px;" ] [
-                    div [ attr.style "font-size: 13px; color: #666;" ] [ text "Total assets" ]
+                    div [ attr.style "font-size: 13px; color: #666;" ] [ text "Total" ]
                     div [ attr.style "font-size: 26px; font-weight: bold;" ] [ text (string total) ]
                 ]
 
@@ -354,17 +355,70 @@ let Main () =
                 ]
 
                 div [ attr.style "padding: 16px; background: #fff8e1; border-radius: 12px;" ] [
-                    div [ attr.style "font-size: 13px; color: #666;" ] [ text "In repair" ]
+                    div [ attr.style "font-size: 13px; color: #666;" ] [ text "In Repair" ]
                     div [ attr.style "font-size: 26px; font-weight: bold;" ] [ text (string inRepair) ]
+                ]
+
+                div [ attr.style "padding: 16px; background: #eeeeee; border-radius: 12px;" ] [
+                    div [ attr.style "font-size: 13px; color: #666;" ] [ text "Retired" ]
+                    div [ attr.style "font-size: 26px; font-weight: bold;" ] [ text (string retired) ]
+                ]
+
+                div [ attr.style "padding: 16px; background: #fce4ec; border-radius: 12px;" ] [
+                    div [ attr.style "font-size: 13px; color: #666;" ] [ text "Missing" ]
+                    div [ attr.style "font-size: 26px; font-weight: bold;" ] [ text (string missing) ]
                 ]
 
                 div [ attr.style "padding: 16px; background: #ffebee; border-radius: 12px;" ] [
                     div [ attr.style "font-size: 13px; color: #666;" ] [ text "Replacement due" ]
-                    div [ attr.style "font-size: 26px; font-weight: bold;" ] [ text (string replacementDue) ]
+                    div [ attr.style "font-size: 26px; font-weight: bold;" ] [ text (string due) ]
                 ]
             ]
         )
         |> Doc.EmbedView
+
+    let replacementReport =
+        assetsVar.View
+        |> Doc.BindView (fun assets ->
+            let dueAssets = replacementDueAssets assets
+
+            div [
+                attr.style "background: white; padding: 22px; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 24px;"
+            ] [
+                h2 [ attr.style "margin-top: 0;" ] [
+                    text "Replacement Report"
+                ]
+
+                p [ attr.style "color: #555;" ] [
+                    text "Assets are marked as replacement due when they are at least 5 years old."
+                ]
+
+                if List.isEmpty dueAssets then
+                    div [
+                        attr.style "padding: 14px; border-radius: 10px; background: #e8f5e9; color: #2e7d32; font-weight: bold;"
+                    ] [
+                        text "No assets are currently due for replacement."
+                    ]
+                else
+                    div [] [
+                        dueAssets
+                        |> List.map (fun asset ->
+                            div [
+                                attr.style "padding: 12px; border-radius: 10px; background: #ffebee; margin-bottom: 10px; border-left: 5px solid #c62828;"
+                            ] [
+                                div [ attr.style "font-weight: bold;" ] [
+                                    text asset.Name
+                                ]
+
+                                div [ attr.style "color: #555;" ] [
+                                    text ("Owner: " + asset.Owner + " | Age: " + string (assetAge asset) + " years | Status: " + assetStatusToString asset.Status)
+                                ]
+                            ]
+                        )
+                        |> Doc.Concat
+                    ]
+            ]
+        )
 
     let validationMessage =
         validationMessageVar.View
@@ -496,6 +550,7 @@ let Main () =
         ]
 
         statsPanel
+        replacementReport
 
         div [
             attr.style "background: white; padding: 22px; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 24px;"

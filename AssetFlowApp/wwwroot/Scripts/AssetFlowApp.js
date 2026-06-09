@@ -23,11 +23,17 @@ function Main(){
   const typeFilterButton=(label, value) => Doc.BindView((currentFilter) => Doc.Element("button", [Attr.HandlerImpl("click", () =>() => typeFilterVar.Set(value)), Attr.Create("style", Equals(currentFilter, value)?"margin-right: 8px; margin-bottom: 8px; padding: 8px 12px; border-radius: 8px; border: none; background: #00695c; color: white; font-weight: bold; cursor: pointer;":"margin-right: 8px; margin-bottom: 8px; padding: 8px 12px; border-radius: 8px; border: 1px solid #cccccc; background: white; cursor: pointer;")], [Doc.TextNode(label)]), typeFilterVar.View);
   const statsPanel=Doc.EmbedView(Map((assets) => {
     const total=length(assets);
-    const active=length(filter((a) => a.Status.$===0, assets));
-    const inRepair=length(filter((a) => a.Status.$===1, assets));
-    const replacementDue=length(filter(isReplacementDue, assets));
-    return Doc.Element("div", [Attr.Create("style", "display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px;")], [Doc.Element("div", [Attr.Create("style", "padding: 16px; background: #f5f5f5; border-radius: 12px;")], [Doc.Element("div", [Attr.Create("style", "font-size: 13px; color: #666;")], [Doc.TextNode("Total assets")]), Doc.Element("div", [Attr.Create("style", "font-size: 26px; font-weight: bold;")], [Doc.TextNode(String(total))])]), Doc.Element("div", [Attr.Create("style", "padding: 16px; background: #e8f5e9; border-radius: 12px;")], [Doc.Element("div", [Attr.Create("style", "font-size: 13px; color: #666;")], [Doc.TextNode("Active")]), Doc.Element("div", [Attr.Create("style", "font-size: 26px; font-weight: bold;")], [Doc.TextNode(String(active))])]), Doc.Element("div", [Attr.Create("style", "padding: 16px; background: #fff8e1; border-radius: 12px;")], [Doc.Element("div", [Attr.Create("style", "font-size: 13px; color: #666;")], [Doc.TextNode("In repair")]), Doc.Element("div", [Attr.Create("style", "font-size: 26px; font-weight: bold;")], [Doc.TextNode(String(inRepair))])]), Doc.Element("div", [Attr.Create("style", "padding: 16px; background: #ffebee; border-radius: 12px;")], [Doc.Element("div", [Attr.Create("style", "font-size: 13px; color: #666;")], [Doc.TextNode("Replacement due")]), Doc.Element("div", [Attr.Create("style", "font-size: 26px; font-weight: bold;")], [Doc.TextNode(String(replacementDue))])])]);
+    const active=countByStatus(Active, assets);
+    const inRepair=countByStatus(InRepair, assets);
+    const retired=countByStatus(Retired, assets);
+    const missing=countByStatus(Missing, assets);
+    const due=length(replacementDueAssets(assets));
+    return Doc.Element("div", [Attr.Create("style", "display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin-bottom: 24px;")], [Doc.Element("div", [Attr.Create("style", "padding: 16px; background: #f5f5f5; border-radius: 12px;")], [Doc.Element("div", [Attr.Create("style", "font-size: 13px; color: #666;")], [Doc.TextNode("Total")]), Doc.Element("div", [Attr.Create("style", "font-size: 26px; font-weight: bold;")], [Doc.TextNode(String(total))])]), Doc.Element("div", [Attr.Create("style", "padding: 16px; background: #e8f5e9; border-radius: 12px;")], [Doc.Element("div", [Attr.Create("style", "font-size: 13px; color: #666;")], [Doc.TextNode("Active")]), Doc.Element("div", [Attr.Create("style", "font-size: 26px; font-weight: bold;")], [Doc.TextNode(String(active))])]), Doc.Element("div", [Attr.Create("style", "padding: 16px; background: #fff8e1; border-radius: 12px;")], [Doc.Element("div", [Attr.Create("style", "font-size: 13px; color: #666;")], [Doc.TextNode("In Repair")]), Doc.Element("div", [Attr.Create("style", "font-size: 26px; font-weight: bold;")], [Doc.TextNode(String(inRepair))])]), Doc.Element("div", [Attr.Create("style", "padding: 16px; background: #eeeeee; border-radius: 12px;")], [Doc.Element("div", [Attr.Create("style", "font-size: 13px; color: #666;")], [Doc.TextNode("Retired")]), Doc.Element("div", [Attr.Create("style", "font-size: 26px; font-weight: bold;")], [Doc.TextNode(String(retired))])]), Doc.Element("div", [Attr.Create("style", "padding: 16px; background: #fce4ec; border-radius: 12px;")], [Doc.Element("div", [Attr.Create("style", "font-size: 13px; color: #666;")], [Doc.TextNode("Missing")]), Doc.Element("div", [Attr.Create("style", "font-size: 26px; font-weight: bold;")], [Doc.TextNode(String(missing))])]), Doc.Element("div", [Attr.Create("style", "padding: 16px; background: #ffebee; border-radius: 12px;")], [Doc.Element("div", [Attr.Create("style", "font-size: 13px; color: #666;")], [Doc.TextNode("Replacement due")]), Doc.Element("div", [Attr.Create("style", "font-size: 26px; font-weight: bold;")], [Doc.TextNode(String(due))])])]);
   }, assetsVar.View));
+  const replacementReport=Doc.BindView((assets) => {
+    const dueAssets=replacementDueAssets(assets);
+    return Doc.Element("div", [Attr.Create("style", "background: white; padding: 22px; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 24px;")], ofSeq(delay(() => append_1([Doc.Element("h2", [Attr.Create("style", "margin-top: 0;")], [Doc.TextNode("Replacement Report")])], delay(() => append_1([Doc.Element("p", [Attr.Create("style", "color: #555;")], [Doc.TextNode("Assets are marked as replacement due when they are at least 5 years old.")])], delay(() => dueAssets.$==0?[Doc.Element("div", [Attr.Create("style", "padding: 14px; border-radius: 10px; background: #e8f5e9; color: #2e7d32; font-weight: bold;")], [Doc.TextNode("No assets are currently due for replacement.")])]:[Doc.Element("div", [], [Doc.Concat(map((asset) => Doc.Element("div", [Attr.Create("style", "padding: 12px; border-radius: 10px; background: #ffebee; margin-bottom: 10px; border-left: 5px solid #c62828;")], [Doc.Element("div", [Attr.Create("style", "font-weight: bold;")], [Doc.TextNode(asset.Name)]), Doc.Element("div", [Attr.Create("style", "color: #555;")], [Doc.TextNode("Owner: "+asset.Owner+" | Age: "+String(assetAge(asset))+" years | Status: "+assetStatusToString(asset.Status))])]), dueAssets))])])))))));
+  }, assetsVar.View);
   const validationMessage=Doc.BindView((message) => message==""?Doc.Empty:Doc.Element("div", [Attr.Create("style", "margin-top: 10px; padding: 10px; border-radius: 8px; background: #ffebee; color: #c62828; font-weight: bold;")], [Doc.TextNode(message)]), validationMessageVar.View);
   const assetCard=(asset) => Doc.Element("div", [Attr.Create("style", "padding: 18px; border: 1px solid #e0e0e0; border-radius: 14px; background: white; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 14px;")], [Doc.Element("div", [Attr.Create("style", "display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;")], [Doc.Element("div", [], [Doc.Element("h3", [Attr.Create("style", "margin: 0 0 8px 0;")], [Doc.TextNode(asset.Name)]), Doc.Element("div", [Attr.Create("style", "color: #555; margin-bottom: 8px;")], [Doc.TextNode("Owner: "+asset.Owner)]), Doc.Element("div", [Attr.Create("style", "color: #555; margin-bottom: 8px;")], [Doc.TextNode("Purchase year: "+String(asset.PurchaseYear)+" | Age: "+String(assetAge(asset))+" years")]), Doc.Element("span", [Attr.Create("style", "display: inline-block; margin-right: 8px; padding: 5px 10px; border-radius: 999px; color: white; font-size: 12px; font-weight: bold; background: "+assetTypeColor(asset.AssetType)+";")], [Doc.TextNode(assetTypeToString(asset.AssetType))]), Doc.Element("span", [Attr.Create("style", "display: inline-block; margin-right: 8px; padding: 5px 10px; border-radius: 999px; color: white; font-size: 12px; font-weight: bold; background: "+assetStatusColor(asset.Status)+";")], [Doc.TextNode(assetStatusToString(asset.Status))]), Doc.Element("span", [Attr.Create("style", "display: inline-block; padding: 5px 10px; border-radius: 999px; color: white; font-size: 12px; font-weight: bold; background: "+replacementColor(asset)+";")], [Doc.TextNode(replacementText(asset))])]), Doc.Element("div", [Attr.Create("style", "display: flex; flex-direction: column; gap: 8px; min-width: 140px;")], [Doc.Element("button", [Attr.HandlerImpl("click", () =>() => updateAssetStatus(asset.Id, Active)), Attr.Create("style", "padding: 8px 10px; border-radius: 8px; border: none; background: #2e7d32; color: white; cursor: pointer;")], [Doc.TextNode("Set Active")]), Doc.Element("button", [Attr.HandlerImpl("click", () =>() => updateAssetStatus(asset.Id, InRepair)), Attr.Create("style", "padding: 8px 10px; border-radius: 8px; border: none; background: #f9a825; color: white; cursor: pointer;")], [Doc.TextNode("Set In Repair")]), Doc.Element("button", [Attr.HandlerImpl("click", () =>() => updateAssetStatus(asset.Id, Retired)), Attr.Create("style", "padding: 8px 10px; border-radius: 8px; border: none; background: #616161; color: white; cursor: pointer;")], [Doc.TextNode("Retire")]), Doc.Element("button", [Attr.HandlerImpl("click", () =>() => updateAssetStatus(asset.Id, Missing)), Attr.Create("style", "padding: 8px 10px; border-radius: 8px; border: none; background: #c62828; color: white; cursor: pointer;")], [Doc.TextNode("Mark Missing")]), Doc.Element("button", [Attr.HandlerImpl("click", () =>() => {
     const assetId=asset.Id;
@@ -39,7 +45,7 @@ function Main(){
     const filteredAssets=applyFilters(a[0], a[1], _2[2], _2[0]);
     return filteredAssets.$==0?Doc.Element("div", [Attr.Create("style", "padding: 18px; border-radius: 12px; background: #fafafa; color: #666;")], [Doc.TextNode("No assets match the selected filters.")]):Doc.Concat(map(assetCard, filteredAssets));
   }, Map2((_2, _3) =>[_2, _3[0], _3[1]], assetsVar.View, combinedFilterView));
-  const _1=Doc.Element("div", [Attr.Create("style", "max-width: 1000px; margin: 40px auto; padding: 24px; font-family: Arial, sans-serif; background: #fcfcfc;")], [Doc.Element("div", [Attr.Create("style", "background: linear-gradient(135deg, #37474f, #78909c); color: white; padding: 28px; border-radius: 16px; margin-bottom: 24px;")], [Doc.Element("h1", [Attr.Create("style", "margin: 0 0 8px 0; font-size: 34px;")], [Doc.TextNode("AssetFlow")]), Doc.Element("p", [Attr.Create("style", "margin: 0; font-size: 16px;")], [Doc.TextNode("IT asset management web application built with F# and WebSharper.")])]), statsPanel, Doc.Element("div", [Attr.Create("style", "background: white; padding: 22px; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 24px;")], [Doc.Element("h2", [Attr.Create("style", "margin-top: 0;")], [Doc.TextNode("Add new asset")]), Doc.Element("div", [Attr.Create("style", "margin-bottom: 10px;")], [Doc.Input([Attr.Create("placeholder", "Asset name"), Attr.Create("style", "width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cccccc; box-sizing: border-box;")], nameVar)]), Doc.Element("div", [Attr.Create("style", "margin-bottom: 10px;")], [Doc.Input([Attr.Create("placeholder", "Owner"), Attr.Create("style", "width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cccccc; box-sizing: border-box;")], ownerVar)]), Doc.Element("div", [Attr.Create("style", "margin-bottom: 14px;")], [Doc.Input([Attr.Create("placeholder", "Purchase year"), Attr.Create("style", "width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cccccc; box-sizing: border-box;")], purchaseYearVar)]), Doc.Element("div", [Attr.Create("style", "margin-bottom: 12px;")], [Doc.Element("div", [Attr.Create("style", "font-weight: bold; margin-bottom: 6px;")], [Doc.TextNode("Asset type")]), typeButton("Laptop", Laptop), typeButton("Desktop", Desktop), typeButton("Server", Server), typeButton("VM", VirtualMachine), typeButton("Network", NetworkDevice), typeButton("Other", Other)]), Doc.Element("div", [Attr.Create("style", "margin-bottom: 14px;")], [Doc.Element("div", [Attr.Create("style", "font-weight: bold; margin-bottom: 6px;")], [Doc.TextNode("Asset status")]), statusButton("Active", Active), statusButton("In Repair", InRepair), statusButton("Retired", Retired), statusButton("Missing", Missing)]), Doc.Element("button", [Attr.HandlerImpl("click", () =>() => {
+  const _1=Doc.Element("div", [Attr.Create("style", "max-width: 1000px; margin: 40px auto; padding: 24px; font-family: Arial, sans-serif; background: #fcfcfc;")], [Doc.Element("div", [Attr.Create("style", "background: linear-gradient(135deg, #37474f, #78909c); color: white; padding: 28px; border-radius: 16px; margin-bottom: 24px;")], [Doc.Element("h1", [Attr.Create("style", "margin: 0 0 8px 0; font-size: 34px;")], [Doc.TextNode("AssetFlow")]), Doc.Element("p", [Attr.Create("style", "margin: 0; font-size: 16px;")], [Doc.TextNode("IT asset management web application built with F# and WebSharper.")])]), statsPanel, replacementReport, Doc.Element("div", [Attr.Create("style", "background: white; padding: 22px; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 24px;")], [Doc.Element("h2", [Attr.Create("style", "margin-top: 0;")], [Doc.TextNode("Add new asset")]), Doc.Element("div", [Attr.Create("style", "margin-bottom: 10px;")], [Doc.Input([Attr.Create("placeholder", "Asset name"), Attr.Create("style", "width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cccccc; box-sizing: border-box;")], nameVar)]), Doc.Element("div", [Attr.Create("style", "margin-bottom: 10px;")], [Doc.Input([Attr.Create("placeholder", "Owner"), Attr.Create("style", "width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cccccc; box-sizing: border-box;")], ownerVar)]), Doc.Element("div", [Attr.Create("style", "margin-bottom: 14px;")], [Doc.Input([Attr.Create("placeholder", "Purchase year"), Attr.Create("style", "width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cccccc; box-sizing: border-box;")], purchaseYearVar)]), Doc.Element("div", [Attr.Create("style", "margin-bottom: 12px;")], [Doc.Element("div", [Attr.Create("style", "font-weight: bold; margin-bottom: 6px;")], [Doc.TextNode("Asset type")]), typeButton("Laptop", Laptop), typeButton("Desktop", Desktop), typeButton("Server", Server), typeButton("VM", VirtualMachine), typeButton("Network", NetworkDevice), typeButton("Other", Other)]), Doc.Element("div", [Attr.Create("style", "margin-bottom: 14px;")], [Doc.Element("div", [Attr.Create("style", "font-weight: bold; margin-bottom: 6px;")], [Doc.TextNode("Asset status")]), statusButton("Active", Active), statusButton("In Repair", InRepair), statusButton("Retired", Retired), statusButton("Missing", Missing)]), Doc.Element("button", [Attr.HandlerImpl("click", () =>() => {
     const name=Trim(nameVar.Get());
     const owner=Trim(ownerVar.Get());
     const yearText=Trim(purchaseYearVar.Get());
@@ -95,8 +101,11 @@ function replacementColor(asset){
 function replacementText(asset){
   return isReplacementDue(asset)?"Replacement due":"OK";
 }
-function isReplacementDue(asset){
-  return assetAge(asset)>=5;
+function replacementDueAssets(assets){
+  return filter(isReplacementDue, assets);
+}
+function countByStatus(status, assets){
+  return length(filter((asset) => Equals(asset.Status, status), assets));
 }
 function parseYear(value){
   let o;
@@ -120,6 +129,9 @@ function filterBySearch(searchText, assets){
 }
 function currentYear(){
   return _c_1.currentYear;
+}
+function isReplacementDue(asset){
+  return assetAge(asset)>=5;
 }
 class Object_1 {
   Equals(obj){
@@ -189,6 +201,16 @@ function map(f, x){
     return res;
   }
 }
+function length(l){
+  let r=l;
+  let i=0;
+  while(r.$==1)
+    {
+      r=tail(r);
+      i=i+1;
+    }
+  return i;
+}
 function filter(p, x){
   let res;
   let r;
@@ -222,15 +244,36 @@ function filter(p, x){
     return res;
   }
 }
-function length(l){
-  let r=l;
-  let i=0;
-  while(r.$==1)
-    {
-      r=tail(r);
-      i=i+1;
+function ofSeq(s){
+  if(s instanceof FSharpList)return s;
+  else if(s instanceof Array)return ofArray(s);
+  else {
+    const e=Get(s);
+    try {
+      let r;
+      let go=e.MoveNext();
+      if(!go)return FSharpList.Empty;
+      else {
+        const res=Create_1(FSharpList, {$:1});
+        r=res;
+        while(go)
+          {
+            r.$0=e.Current;
+            if(e.MoveNext()){
+              const t=Create_1(FSharpList, {$:1});
+              r=(r.$1=t,t);
+            }
+            else go=false;
+          }
+        r.$1=FSharpList.Empty;
+        return res;
+      }
     }
-  return i;
+    finally {
+      const _1=e;
+      if(typeof _1=="object"&&isIDisposable(_1))e.Dispose();
+    }
+  }
 }
 function append(x, y){
   let r;
@@ -531,6 +574,174 @@ class Doc extends Object_1 {
     this.docNode=docNode;
     this.updates=updates;
   }
+}
+function delay(f){
+  return{GetEnumerator:() => Get(f())};
+}
+function append_1(s1, s2){
+  return{GetEnumerator:() => {
+    const e1=Get(s1);
+    const first=[true];
+    return new T(e1, null, (x) => {
+      if(x.s.MoveNext()){
+        x.c=x.s.Current;
+        return true;
+      }
+      else {
+        const x_1=x.s;
+        if(!Equals(x_1, null))x_1.Dispose();
+        x.s=null;
+        return first[0]&&(first[0]=false,x.s=Get(s2),x.s.MoveNext()?(x.c=x.s.Current,true):(x.s.Dispose(),x.s=null,false));
+      }
+    }, (x) => {
+      const x_1=x.s;
+      if(!Equals(x_1, null))x_1.Dispose();
+    });
+  }};
+}
+function head_1(s){
+  const e=Get(s);
+  try {
+    return e.MoveNext()?e.Current:insufficient();
+  }
+  finally {
+    const _1=e;
+    if(typeof _1=="object"&&isIDisposable(_1))e.Dispose();
+  }
+}
+function collect(f, s){
+  return concat(map_1(f, s));
+}
+function map_1(f, s){
+  return{GetEnumerator:() => {
+    const en=Get(s);
+    return new T(null, null, (e) => en.MoveNext()&&(e.c=f(en.Current),true), () => {
+      en.Dispose();
+    });
+  }};
+}
+function fold(f, x, s){
+  let r=x;
+  const e=Get(s);
+  try {
+    while(e.MoveNext())
+      r=f(r, e.Current);
+    return r;
+  }
+  finally {
+    const _1=e;
+    if(typeof _1=="object"&&isIDisposable(_1))e.Dispose();
+  }
+}
+function concat(ss){
+  return{GetEnumerator:() => {
+    const outerE=Get(ss);
+    function next(st){
+      while(true)
+        {
+          const m=st.s;
+          if(Equals(m, null)){
+            if(outerE.MoveNext()){
+              st.s=Get(outerE.Current);
+              st=st;
+            }
+            else {
+              outerE.Dispose();
+              return false;
+            }
+          }
+          else if(m.MoveNext()){
+            st.c=m.Current;
+            return true;
+          }
+          else {
+            st.Dispose();
+            st.s=null;
+            st=st;
+          }
+        }
+    }
+    return new T(null, null, next, (st) => {
+      const x=st.s;
+      if(!Equals(x, null))x.Dispose();
+      const x_1=outerE;
+      if(!Equals(x_1, null))x_1.Dispose();
+    });
+  }};
+}
+function init(n, f){
+  return take(n, initInfinite(f));
+}
+function iter(p, s){
+  const e=Get(s);
+  try {
+    while(e.MoveNext())
+      p(e.Current);
+  }
+  finally {
+    const _1=e;
+    if(typeof _1=="object"&&isIDisposable(_1))e.Dispose();
+  }
+}
+function take(n, s){
+  n<0?nonNegative():void 0;
+  return{GetEnumerator:() => {
+    const e=[Get(s)];
+    return new T(0, null, (o) => {
+      o.s=o.s+1;
+      if(o.s>n)return false;
+      else {
+        const en=e[0];
+        return Equals(en, null)?insufficient():en.MoveNext()?(o.c=en.Current,o.s===n?(en.Dispose(),e[0]=null):void 0,true):(en.Dispose(),e[0]=null,insufficient());
+      }
+    }, () => {
+      const x=e[0];
+      if(!Equals(x, null))x.Dispose();
+    });
+  }};
+}
+function initInfinite(f){
+  return{GetEnumerator:() => new T(0, null, (e) => {
+    e.c=f(e.s);
+    e.s=e.s+1;
+    return true;
+  }, void 0)};
+}
+function forall(p, s){
+  return!exists((x) =>!p(x), s);
+}
+function exists(p, s){
+  const e=Get(s);
+  try {
+    let r=false;
+    while(!r&&e.MoveNext())
+      r=p(e.Current);
+    return r;
+  }
+  finally {
+    const _1=e;
+    if(typeof _1=="object"&&isIDisposable(_1))e.Dispose();
+  }
+}
+function max(s){
+  const e=Get(s);
+  try {
+    if(!e.MoveNext())seqEmpty();
+    let m=e.Current;
+    while(e.MoveNext())
+      {
+        const x=e.Current;
+        if(Compare(x, m)===1)m=x;
+      }
+    return m;
+  }
+  finally {
+    const _1=e;
+    if(typeof _1=="object"&&isIDisposable(_1))e.Dispose();
+  }
+}
+function seqEmpty(){
+  return FailWith("The input sequence was empty.");
 }
 class ConcreteVar extends Var {
   isConst;
@@ -1185,11 +1396,55 @@ function MapTreeReduce(mapping, defaultValue, reduction, array){
   }
   return(loop(0))(l);
 }
+function Get(x){
+  return x instanceof Array?ArrayEnumerator(x):Equals(typeof x, "string")?StringEnumerator(x):x.GetEnumerator();
+}
+function ArrayEnumerator(s){
+  return new T(0, null, (e) => {
+    const i=e.s;
+    return i<length_1(s)&&(e.c=get(s, i),e.s=i+1,true);
+  }, void 0);
+}
+function StringEnumerator(s){
+  return new T(0, null, (e) => {
+    const i=e.s;
+    return i<s.length&&(e.c=s[i],e.s=i+1,true);
+  }, void 0);
+}
+function Get0(x){
+  return x instanceof Array?ArrayEnumerator(x):Equals(typeof x, "string")?StringEnumerator(x):"GetEnumerator0"in x?x.GetEnumerator0():x.GetEnumerator();
+}
+class T extends Object_1 {
+  s;
+  c;
+  n;
+  d;
+  e;
+  MoveNext(){
+    const m=this.n(this);
+    this.e=m?1:2;
+    return m;
+  }
+  get Current(){
+    return this.e===1?this.c:this.e===0?FailWith("Enumeration has not started. Call MoveNext."):FailWith("Enumeration already finished.");
+  }
+  Dispose(){
+    if(this.d)this.d(this);
+  }
+  constructor(s, c, n, d){
+    super();
+    this.s=s;
+    this.c=c;
+    this.n=n;
+    this.d=d;
+    this.e=0;
+  }
+}
 function Trim(s){
   return s.replace(new RegExp("^\\s+"), "").replace(new RegExp("\\s+$"), "");
 }
-function concat(separator, strings){
-  return ofSeq(strings).join(separator);
+function concat_1(separator, strings){
+  return ofSeq_1(strings).join(separator);
 }
 function SplitChars(s, sep, opts){
   return Split(s, new RegExp("["+RegexEscape(sep.join(""))+"]"), opts);
@@ -1197,8 +1452,8 @@ function SplitChars(s, sep, opts){
 function StartsWith(t, s){
   return t.substring(0, s.length)==s;
 }
-function forall(f, s){
-  return forall_1(f, protect(s));
+function forall_1(f, s){
+  return forall(f, protect(s));
 }
 function Split(s, pat, opts){
   return opts===1?filter_1((x) => x!=="", SplitWith(s, pat)):SplitWith(s, pat);
@@ -1400,174 +1655,6 @@ function EmbedDoc(Item){
 function ElemDoc(Item){
   return{$:1, $0:Item};
 }
-function append_1(s1, s2){
-  return{GetEnumerator:() => {
-    const e1=Get(s1);
-    const first=[true];
-    return new T(e1, null, (x) => {
-      if(x.s.MoveNext()){
-        x.c=x.s.Current;
-        return true;
-      }
-      else {
-        const x_1=x.s;
-        if(!Equals(x_1, null))x_1.Dispose();
-        x.s=null;
-        return first[0]&&(first[0]=false,x.s=Get(s2),x.s.MoveNext()?(x.c=x.s.Current,true):(x.s.Dispose(),x.s=null,false));
-      }
-    }, (x) => {
-      const x_1=x.s;
-      if(!Equals(x_1, null))x_1.Dispose();
-    });
-  }};
-}
-function head_1(s){
-  const e=Get(s);
-  try {
-    return e.MoveNext()?e.Current:insufficient();
-  }
-  finally {
-    const _1=e;
-    if(typeof _1=="object"&&isIDisposable(_1))e.Dispose();
-  }
-}
-function delay(f){
-  return{GetEnumerator:() => Get(f())};
-}
-function collect(f, s){
-  return concat_1(map_1(f, s));
-}
-function map_1(f, s){
-  return{GetEnumerator:() => {
-    const en=Get(s);
-    return new T(null, null, (e) => en.MoveNext()&&(e.c=f(en.Current),true), () => {
-      en.Dispose();
-    });
-  }};
-}
-function fold(f, x, s){
-  let r=x;
-  const e=Get(s);
-  try {
-    while(e.MoveNext())
-      r=f(r, e.Current);
-    return r;
-  }
-  finally {
-    const _1=e;
-    if(typeof _1=="object"&&isIDisposable(_1))e.Dispose();
-  }
-}
-function concat_1(ss){
-  return{GetEnumerator:() => {
-    const outerE=Get(ss);
-    function next(st){
-      while(true)
-        {
-          const m=st.s;
-          if(Equals(m, null)){
-            if(outerE.MoveNext()){
-              st.s=Get(outerE.Current);
-              st=st;
-            }
-            else {
-              outerE.Dispose();
-              return false;
-            }
-          }
-          else if(m.MoveNext()){
-            st.c=m.Current;
-            return true;
-          }
-          else {
-            st.Dispose();
-            st.s=null;
-            st=st;
-          }
-        }
-    }
-    return new T(null, null, next, (st) => {
-      const x=st.s;
-      if(!Equals(x, null))x.Dispose();
-      const x_1=outerE;
-      if(!Equals(x_1, null))x_1.Dispose();
-    });
-  }};
-}
-function init(n, f){
-  return take(n, initInfinite(f));
-}
-function iter(p, s){
-  const e=Get(s);
-  try {
-    while(e.MoveNext())
-      p(e.Current);
-  }
-  finally {
-    const _1=e;
-    if(typeof _1=="object"&&isIDisposable(_1))e.Dispose();
-  }
-}
-function take(n, s){
-  n<0?nonNegative():void 0;
-  return{GetEnumerator:() => {
-    const e=[Get(s)];
-    return new T(0, null, (o) => {
-      o.s=o.s+1;
-      if(o.s>n)return false;
-      else {
-        const en=e[0];
-        return Equals(en, null)?insufficient():en.MoveNext()?(o.c=en.Current,o.s===n?(en.Dispose(),e[0]=null):void 0,true):(en.Dispose(),e[0]=null,insufficient());
-      }
-    }, () => {
-      const x=e[0];
-      if(!Equals(x, null))x.Dispose();
-    });
-  }};
-}
-function initInfinite(f){
-  return{GetEnumerator:() => new T(0, null, (e) => {
-    e.c=f(e.s);
-    e.s=e.s+1;
-    return true;
-  }, void 0)};
-}
-function forall_1(p, s){
-  return!exists((x) =>!p(x), s);
-}
-function exists(p, s){
-  const e=Get(s);
-  try {
-    let r=false;
-    while(!r&&e.MoveNext())
-      r=p(e.Current);
-    return r;
-  }
-  finally {
-    const _1=e;
-    if(typeof _1=="object"&&isIDisposable(_1))e.Dispose();
-  }
-}
-function max(s){
-  const e=Get(s);
-  try {
-    if(!e.MoveNext())seqEmpty();
-    let m=e.Current;
-    while(e.MoveNext())
-      {
-        const x=e.Current;
-        if(Compare(x, m)===1)m=x;
-      }
-    return m;
-  }
-  finally {
-    const _1=e;
-    if(typeof _1=="object"&&isIDisposable(_1))e.Dispose();
-  }
-}
-function seqEmpty(){
-  return FailWith("The input sequence was empty.");
-}
 function Value(var_1){
   return ValueWith(StringApply(), var_1);
 }
@@ -1752,9 +1839,9 @@ function foldBack(f, arr, zero){
   return acc;
 }
 function concat_2(xs){
-  return Array.prototype.concat.apply([], ofSeq(xs));
+  return Array.prototype.concat.apply([], ofSeq_1(xs));
 }
-function ofSeq(xs){
+function ofSeq_1(xs){
   if(xs instanceof Array)return xs.slice();
   else if(xs instanceof FSharpList)return ofList(xs);
   else {
@@ -2015,50 +2102,6 @@ function TryParse_1(s, min, max_1, r){
   const ok=x===x-x%1&&x>=min&&x<=max_1;
   if(ok)r.set(x);
   return ok;
-}
-function Get(x){
-  return x instanceof Array?ArrayEnumerator(x):Equals(typeof x, "string")?StringEnumerator(x):x.GetEnumerator();
-}
-function ArrayEnumerator(s){
-  return new T(0, null, (e) => {
-    const i=e.s;
-    return i<length_1(s)&&(e.c=get(s, i),e.s=i+1,true);
-  }, void 0);
-}
-function StringEnumerator(s){
-  return new T(0, null, (e) => {
-    const i=e.s;
-    return i<s.length&&(e.c=s[i],e.s=i+1,true);
-  }, void 0);
-}
-function Get0(x){
-  return x instanceof Array?ArrayEnumerator(x):Equals(typeof x, "string")?StringEnumerator(x):"GetEnumerator0"in x?x.GetEnumerator0():x.GetEnumerator();
-}
-class T extends Object_1 {
-  s;
-  c;
-  n;
-  d;
-  e;
-  MoveNext(){
-    const m=this.n(this);
-    this.e=m?1:2;
-    return m;
-  }
-  get Current(){
-    return this.e===1?this.c:this.e===0?FailWith("Enumeration has not started. Call MoveNext."):FailWith("Enumeration already finished.");
-  }
-  Dispose(){
-    if(this.d)this.d(this);
-  }
-  constructor(s, c, n, d){
-    super();
-    this.s=s;
-    this.c=c;
-    this.n=n;
-    this.d=d;
-    this.e=0;
-  }
 }
 function StringApply(){
   return _c_4.StringApply;
@@ -2379,7 +2422,7 @@ let _c_4=Lazy((_i) => class Client {
     };
     this.StringListGet=(el) => {
       const selectedOptions=el.selectedOptions;
-      return Some(ofSeq(delay(() => collect((i) =>[selectedOptions.item(i).value], range(0, selectedOptions.length-1)))));
+      return Some(ofSeq_1(delay(() => collect((i) =>[selectedOptions.item(i).value], range(0, selectedOptions.length-1)))));
     };
     const g_1=StringListGet();
     const s_1=StringListSet();
@@ -2406,7 +2449,7 @@ let _c_4=Lazy((_i) => class Client {
     this.FileSetUnchecked=() =>() => null;
     this.FileGetUnchecked=(el) => {
       const files=el.files;
-      return Some(ofSeq(delay(() => map_1((i) => files.item(i), range(0, files.length-1)))));
+      return Some(ofSeq_1(delay(() => map_1((i) => files.item(i), range(0, files.length-1)))));
     };
     const g_3=FileGetUnchecked();
     const s_3=FileSetUnchecked();
@@ -2525,7 +2568,7 @@ function removeHolesExcept(instance, dontRemove){
     if(!dontRemove.Contains(e.getAttribute("ws-replace")))e.parentNode.removeChild(e);
   });
   foreachNotPreserved(instance, "[ws-on]", (e) => {
-    e.setAttribute("ws-on", concat(" ", filter_1((x) => dontRemove.Contains(get(SplitChars(x, [":"], 1), 1)), SplitChars(e.getAttribute("ws-on"), [" "], 1))));
+    e.setAttribute("ws-on", concat_1(" ", filter_1((x) => dontRemove.Contains(get(SplitChars(x, [":"], 1), 1)), SplitChars(e.getAttribute("ws-on"), [" "], 1))));
   });
   foreachNotPreserved(instance, "[ws-attr-holes]", (e) => {
     const holeAttrs=SplitChars(e.getAttribute("ws-attr-holes"), [" "], 1);
@@ -2567,7 +2610,7 @@ function mapHoles(t, mappings){
   run("ws-onafterrender");
   run("ws-var");
   foreachNotPreserved(t, "[ws-on]", (e) => {
-    e.setAttribute("ws-on", concat(" ", map_2((x) => {
+    e.setAttribute("ws-on", concat_1(" ", map_2((x) => {
       let o;
       const a=SplitChars(x, [":"], 1);
       const m=(o=null,[mappings.TryGetValue(get(a, 1), {get:() => o, set:(v) => {
@@ -2613,8 +2656,8 @@ function convertAttrs(el){
     }
     else void 0;
   }
-  if(!(events.length==0))el.setAttribute("ws-on", concat(" ", events));
-  if(!(holedAttrs.length==0))el.setAttribute("ws-attr-holes", concat(" ", holedAttrs));
+  if(!(events.length==0))el.setAttribute("ws-on", concat_1(" ", events));
+  if(!(holedAttrs.length==0))el.setAttribute("ws-attr-holes", concat_1(" ", holedAttrs));
   const lowercaseAttr=(name) => {
     const m=el.getAttribute(name);
     if(m==null){ }
@@ -2766,7 +2809,7 @@ class Updates_1 {
   }
 }
 function isBlank(s){
-  return forall(IsWhiteSpace, s);
+  return forall_1(IsWhiteSpace, s);
 }
 class CheckedInput {
   get Input(){
